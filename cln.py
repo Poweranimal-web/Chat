@@ -5,14 +5,14 @@ class ClientChat(Protocol):
      def connectionMade(self):
          print('connected')
      def dataReceived(self, data: str):
-          self.count = 0
-          self.count =+ 1
-          nick = input('Write your nickname ').encode('utf-8')
-          self.transport.write(nick)
-          if self.count == 1:
-             self.count =+1
-             self.transport.write('Choose which one you send message'.encode('utf-8'))
-             print(data)
+         login = input('Enter your  login: ')
+         password = input('Enter your password: ')
+         data_auth = {}
+         data_auth['login'] = login
+         data_auth['password'] = password
+         data2 = ','.join([f'{key},{value}' for key, value in data_auth.items()])
+         a = data2.encode('utf-8')
+         self.transport.write(a)
      def connectionLost(self, reason):
          print('disconnected, reason:', reason)
 class ClientChatFactory(ClientFactory):

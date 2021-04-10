@@ -10,11 +10,14 @@ class Chat(Protocol):
        self.transport.write("Welcome! There are currently %d open connections" .encode('utf-8')%(self.factory.numProtocols))
     def dataReceived(self, data):
         self.factory.ips.append(self.factory.addr)
-        a = str(data)
-        b = self.factory.addr
-        self.factory.users[a] = b
-        if self.factory.numProtocols == 2:
-            self.factory.ips.transport.write(self.factory.users[a])
+        a = data.encode('utf-8')
+        print('From Client:', data)
+        self.transport.write('Server  Answer.The data was received from client '.encode('utf-8'))
+        # a = str(data)
+        # b = self.factory.addr
+        # self.factory.users[a] = b
+        # if self.factory.numProtocols == 2:
+        #     self.factory.ips.transport.write(self.factory.users[a])
     def connectionLost(self, reason):
          print('dissconeted, reason:', reason)
          self.factory.numProtocols =- 1
