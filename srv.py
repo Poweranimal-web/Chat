@@ -10,7 +10,7 @@ class Chat(Protocol):
        self.transport.write("Welcome! There are currently %d open connections" .encode('utf-8')%(self.factory.numProtocols))
     def dataReceived(self, data):
         self.factory.ips.append(self.factory.addr)
-        a = data.encode('utf-8')
+        a = data
         print('From Client:', data)
         self.transport.write('Server  Answer.The data was received from client '.encode('utf-8'))
         # a = str(data)

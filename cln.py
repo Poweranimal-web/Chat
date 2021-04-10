@@ -5,6 +5,7 @@ class ClientChat(Protocol):
      def connectionMade(self):
          print('connected')
      def dataReceived(self, data: str):
+         print(data)
          login = input('Enter your  login: ')
          password = input('Enter your password: ')
          data_auth = {}
