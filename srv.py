@@ -1,3 +1,4 @@
+import json
 from twisted.internet import reactor, protocol
 from twisted.internet.protocol import Factory, Protocol
 port = 9090
@@ -10,8 +11,9 @@ class Chat(Protocol):
        self.transport.write("Welcome! There are currently %d open connections" .encode('utf-8')%(self.factory.numProtocols))
     def dataReceived(self, data):
         self.factory.ips.append(self.factory.addr)
-        a = data
-        print('From Client:', data)
+        b = data
+        a = json.dumps(b)
+        print('From Client:', a)
         self.transport.write('Server  Answer.The data was received from client '.encode('utf-8'))
         # a = str(data)
         # b = self.factory.addr
