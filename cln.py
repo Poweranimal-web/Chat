@@ -12,7 +12,7 @@ class ClientChat(Protocol):
          data_auth = {}
          data_auth['login'] = login
          data_auth['password'] = password
-         data2 = ','.join([f'{key},{value}' for key, value in data_auth.items()])
+         data2 = ','.join([f'{key},{value}' for key,value in data_auth.items()])
          a = data2.encode('utf-8')
          self.transport.write(a)
      def connectionLost(self, reason):

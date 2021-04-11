@@ -9,12 +9,16 @@ class Chat(Protocol):
     def connectionMade(self):
        self.factory.numProtocols =+1
        self.transport.write("Welcome! There are currently %d open connections" .encode('utf-8')%(self.factory.numProtocols))
-    def dataReceived(self, data):
+    def dataReceived(self, data:str):
         self.factory.ips.append(self.factory.addr)
-        b = data
-        a = json.dumps(b)
-        print('From Client:', a)
+        # with open("host2.json", 'w+')as f:
+        # struc = {}
+        dataform = str(data).strip("'<>() ").replace('\'', '\"')
+        struc = json.loads(dataform)
+        print('From Client:', struc)
         self.transport.write('Server  Answer.The data was received from client '.encode('utf-8'))
+
+
         # a = str(data)
         # b = self.factory.addr
         # self.factory.users[a] = b
