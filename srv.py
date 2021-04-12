@@ -13,12 +13,10 @@ class Chat(Protocol):
         self.factory.ips.append(self.factory.addr)
         # with open("host2.json", 'w+')as f:
         # struc = {}
-        dataform = str(data).strip("'<>() ").replace('\'', '\"')
-        struc = json.loads(dataform)
+        d = data.decode('utf-8')
+        struc = json.loads(d)
         print('From Client:', struc)
         self.transport.write('Server  Answer.The data was received from client '.encode('utf-8'))
-
-
         # a = str(data)
         # b = self.factory.addr
         # self.factory.users[a] = b
