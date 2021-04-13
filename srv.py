@@ -10,23 +10,33 @@ class Chat(Protocol):
     def connectionMade(self):
        self.factory.numProtocols =+1
        self.transport.write("Welcome! There are currently %d open connections" .encode('utf-8')%(self.factory.numProtocols))
-    def dataReceived(self, data:str):
-        self.factory.ips.append(self.factory.addr)
-        print(type(self.factory.addr))
-        # str1 = json.dumps(self.factory.addr)
+       self.dataReceived
+    def dataReceveid1(self, data):
+        d = data.decode('utf-8')
+        struc = json.loads(d)
+        struc['addres'] = self.factory.addr
+        str = json.dumps(struc)
+        if str in f:
+            self.transport.write('You are authorithed.Welcome %' % struc['login'].encode('utf-8'))
+        else:
+            self.transport.write('Wrong data, pls try again'.encode('utf-8'))
+    def dataReceveid2(self, data):
         d = data.decode('utf-8')
         struc = json.loads(d)
         struc['addres'] = self.factory.addr
         str = json.dumps(struc)
         f.write(str)
         f.close()
-        print('From Client:', struc)
-        self.transport.write('Server  Answer.The data was received from client '.encode('utf-8'))
-        # a = str(data)
-        # b = self.factory.addr
-        # self.factory.users[a] = b
-        # if self.factory.numProtocols == 2:
-        #     self.factory.ips.transport.write(self.factory.users[a])
+        self.transport.write('Welcome % , you are registred' % struc['login'].encode('utf-8'))
+    def dataReceived(self, data):
+        self.factory.ips.append(self.factory.addr)
+        b = data.decode('utf-8')
+        self.transport.write('data get'.encode('utf-8'))
+        if b == 'yes':
+             self.dataReceveid1(data=bytes)
+        elif b == 'no':
+             self.dataReceveid2(data=bytes)
+
     def connectionLost(self, reason):
          print('dissconeted, reason:', reason)
          self.factory.numProtocols =- 1
