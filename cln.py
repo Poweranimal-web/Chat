@@ -34,12 +34,6 @@ class ClientChat(Protocol):
             data2 = json.dumps(data_auth)
             a = data2.encode('utf-8')
             self.transport.write(a)
-
-
-
-
-
-
      def connectionLost(self, reason):
          print('disconnected, reason:', reason)
 class ClientChatFactory(ClientFactory):
