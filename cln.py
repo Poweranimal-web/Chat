@@ -9,33 +9,28 @@ class ClientChat(Protocol):
          print('connected')
      def dataReceived(self, data):
          global check
-         print(data)
-         if check == 'no':
-             check1 = check.encode('utf-8')
-             self.transport.write(check1)
-         elif check == 'yes':
-             check1 = check.encode('utf-8')
-             self.transport.write(check1)
-class ClientChat2(ClientChat):
-     def dataReceived(self, data):
          if check == 'no':
              print(data)
              login = input('Enter your  login: ')
              password = input('Enter your password: ')
              data_auth = {}
+             data_auth['set'] = 'registr'
              data_auth['login'] = login
              data_auth['password'] = password
              data2 = json.dumps(data_auth)
              a = data2.encode('utf-8')
              self.transport.write(a)
+             print(data)
          elif check == 'yes':
             print(data)
             print('pls authoristing')
+            set = 'auth'.encode('utf-8')
             login = input('Enter your login: ')
             password = input('Enter your password: ')
             data_auth = {}
             data_auth['login'] = login
             data_auth['password'] = password
+            data_auth['set'] = 'auth'
             data2 = json.dumps(data_auth)
             a = data2.encode('utf-8')
             self.transport.write(a)
