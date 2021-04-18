@@ -1,21 +1,33 @@
 import json
-from twisted.internet import reactor, protocol
+from twisted.internet import reactor, protocol, task
 from twisted.internet.protocol import ClientFactory, Protocol
-from twisted.protocols.basic import LineReceiver
 port = 9090
 check = input('Do you registred, already?')
+timeout = 10.0
 class ClientChat(Protocol):
      def connectionMade(self):
          print('connected')
+     def dataGet(self, data):
+         decode = data.decode('utf-8')
+         print(decode)
+         set = {}
+         set['set'] = 'Get'
+         data2 = json.dumps(set)
+         a = data2.encode('utf-8')
+         self.transport.write(a)
+     l = task.LoopingCall(dataGet)
+     l.start(timeout)
      def dataReceived(self, data):
          global check
          c = data.decode('utf-8')
          print(c)
          if c == 'Welcome , you are registred':
-             choose = input('Choose one that send message:')
              data_login = {}
-             message = input('write message that you want send: ')
-             data_login['login'] = choose
+             choose = input('Choose one that send message:')
+             message = input('Write message that you want send: ')
+             name = input('Enter your name: ')
+             data_login['sender'] = name
+             data_login['receipient'] = choose
              data_login['set'] = 'write message'
              data_login['message'] = message
              string = json.dumps(data_login)
@@ -44,7 +56,6 @@ class ClientChat(Protocol):
             data2 = json.dumps(data_auth)
             a = data2.encode('utf-8')
             self.transport.write(a)
-
      def connectionLost(self, reason):
          print('disconnected, reason:', reason)
 class ClientChatFactory(ClientFactory):

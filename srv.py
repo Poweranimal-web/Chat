@@ -24,25 +24,24 @@ class Chat(Protocol):
         elif struc['set'] == 'registr':
             global count
             del struc['set']
-            user = {}
             struc['addres'] = self.factory.addr
-            user['user'] = []
-            user['user'].append(struc)
             with open('user.txt', 'w') as f:
-                json.dump(user, f)
-                f.close()
+                json.dump(struc, f)
             self.transport.write(('Welcome , you are registred').encode('utf-8'))
         elif struc['set'] == 'write message':
             del struc['set']
-            with open('user.txt', 'r') as f:
-                r = json.load(f)
-                for p in r['user']:
-                    if struc['login'] in p['login']:
-                               print(p['addres'])
-                               a = p['addres']
-                               if a in self.factory.ips:
-                                    for c in self.factory.ips:
-                                       c.transport.write(struc['message'].encode('utf-8'))
+            message = {}
+            message1 = "{}:{}".format(struc['sender'], struc['message'])
+            c = struc['receipient']
+            message[c] = message1
+            with open('message.txt', 'w') as f:
+                json.dump(message + '\n', f)
+        elif struc['set'] == 'Get':
+            with open('message.txt', 'w+') as f:
+                file = json.load(f)
+                for key ,value in file:
+                    self.transport.write((value).encode('utf-8'))
+                    f = open('file.txt', 'w').close()
     def connectionLost(self, reason):
          print('dissconeted, reason:', reason)
          self.factory.numProtocols =- 1
