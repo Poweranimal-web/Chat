@@ -9,8 +9,19 @@ class ClientChat(Protocol):
          print('connected')
      def dataReceived(self, data):
          global check
-         if check == 'no':
-             print(data)
+         c = data.decode('utf-8')
+         print(c)
+         if c == 'Welcome , you are registred':
+             choose = input('Choose one that send message:')
+             data_login = {}
+             message = input('write message that you want send: ')
+             data_login['login'] = choose
+             data_login['set'] = 'write message'
+             data_login['message'] = message
+             string = json.dumps(data_login)
+             format_utf = string.encode('utf-8')
+             self.transport.write(format_utf)
+         elif check == 'no':
              login = input('Enter your  login: ')
              password = input('Enter your password: ')
              data_auth = {}
@@ -20,11 +31,10 @@ class ClientChat(Protocol):
              data2 = json.dumps(data_auth)
              a = data2.encode('utf-8')
              self.transport.write(a)
-             print(data)
          elif check == 'yes':
-            print(data)
+            c = data.decode('utf-8')
+            print(c)
             print('pls authoristing')
-            set = 'auth'.encode('utf-8')
             login = input('Enter your login: ')
             password = input('Enter your password: ')
             data_auth = {}
@@ -34,6 +44,7 @@ class ClientChat(Protocol):
             data2 = json.dumps(data_auth)
             a = data2.encode('utf-8')
             self.transport.write(a)
+
      def connectionLost(self, reason):
          print('disconnected, reason:', reason)
 class ClientChatFactory(ClientFactory):
