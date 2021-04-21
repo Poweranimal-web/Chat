@@ -1,11 +1,14 @@
 import json
 from twisted.internet import reactor, protocol
 from twisted.internet.protocol import Factory, Protocol
+from write_data import insert_book
+from check_data import query_with_fetchone
+from write_data2 import insert_book
 port = 9090
 class Chat(Protocol):
     def __init__(self, factory, addr):
         self.factory = (factory)
-        self.factory.addr = str(addr)
+        self.factory.addr = addr
     def connectionMade(self):
        self.factory.ips.append(self.factory.addr)
        self.factory.numProtocols =+1
@@ -15,33 +18,28 @@ class Chat(Protocol):
         struc = json.loads(d)
         if struc['set'] == 'auth':
             del struc['set']
-            f = open('user.txt', 'w+')
-            str = json.dumps(struc)
-            if str in f:
-                self.transport.write('You are authorithed.Welcome %' % struc['login'].encode('utf-8'))
+            login = struc['login']
+            password = struc['password']
+            a = query_with_fetchone(login, password)
+            if a == True:
+                self.transport.write('Welcome , you are registred'.encode('utf-8'))
             else:
-                self.transport.write('Wrong data, pls try again'.encode('utf-8'))
+                self.transport.write('Wrong data, try again('.encode('utf-8'))
         elif struc['set'] == 'registr':
-            global count
             del struc['set']
-            struc['addres'] = self.factory.addr
-            with open('user.txt', 'w') as f:
-                json.dump(struc, f)
+            login = struc['login']
+            password = struc['password']
+            insert_book(login, password)
             self.transport.write(('Welcome , you are registred').encode('utf-8'))
         elif struc['set'] == 'write message':
             del struc['set']
-            message = {}
-            message1 = "{}:{}".format(struc['sender'], struc['message'])
+            message = "{}:{}".format(struc['sender'], struc['message'])
             c = struc['receipient']
-            message[c] = message1
-            with open('message.txt', 'w') as f:
-                json.dump(message + '\n', f)
+            insert_book(c, message)
         elif struc['set'] == 'Get':
-            with open('message.txt', 'w+') as f:
-                file = json.load(f)
-                for key ,value in file:
-                    self.transport.write((value).encode('utf-8'))
-                    f = open('file.txt', 'w').close()
+            a = struc['nick']
+            b =
+
     def connectionLost(self, reason):
          print('dissconeted, reason:', reason)
          self.factory.numProtocols =- 1
