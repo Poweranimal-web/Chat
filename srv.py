@@ -2,8 +2,10 @@ import json
 from twisted.internet import reactor, protocol
 from twisted.internet.protocol import Factory, Protocol
 from write_data import insert_book
-from check_data import query_with_fetchone
-from write_data2 import insert_book
+from check_data import query_with_fetchone1
+from write_data2 import insert_book1
+from Check_data2 import query_with_fetchone
+from delete_data import delete_book
 port = 9090
 class Chat(Protocol):
     def __init__(self, factory, addr):
@@ -20,7 +22,7 @@ class Chat(Protocol):
             del struc['set']
             login = struc['login']
             password = struc['password']
-            a = query_with_fetchone(login, password)
+            a = query_with_fetchone1(login, password)
             if a == True:
                 self.transport.write('Welcome , you are registred'.encode('utf-8'))
             else:
@@ -35,15 +37,24 @@ class Chat(Protocol):
             del struc['set']
             message = "{}:{}".format(struc['sender'], struc['message'])
             c = struc['receipient']
-            insert_book(c, message)
+            insert_book1(c, message)
+            self.transport.write('message sent'.encode('utf-8'))
         elif struc['set'] == 'Get':
-            a = struc['nick']
-            b =
-
+            del struc['set']
+            login = struc['nick']
+            list = []
+            b = query_with_fetchone(login)
+            string = str(b)
+            list.append(string)
+            list.append('GET')
+            delete_book(login)
+            if b == False:
+                self.transport.write('No messages(('.encode('utf-8'))
+            else:
+                self.transport.write((string).encode('utf-8'))
     def connectionLost(self, reason):
          print('dissconeted, reason:', reason)
          self.factory.numProtocols =- 1
-         self.factory.ips.remove(self.factory.ips)
 class ChatFactory(Factory):
     def __init__(self):
         self.client = []

@@ -1,7 +1,7 @@
 from python_mysql_dbconfig import read_db_config
 from mysql.connector import MySQLConnection, Error
-query = "INSERT INTO users(login,message)""VALUES(%s,%s)"
-def insert_book(login, message):
+query = "INSERT INTO messages(login,message)""VALUES(%s,%s)"
+def insert_book1(login, message):
     args = (login, message)
     try:
         db_config = read_db_config()
@@ -23,5 +23,3 @@ def insert_book(login, message):
         cursor.close()
         conn.close()
 
-if __name__ == '__main__':
-    insert_book()
