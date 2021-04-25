@@ -12,9 +12,11 @@ class Chat(Protocol):
         self.factory = (factory)
         self.factory.addr = addr
     def connectionMade(self):
-       self.factory.ips.append(self.factory.addr)
        self.factory.numProtocols =+1
-       self.transport.write('Hello from server'.encode('utf-8'))
+       hi = {}
+       hi['set'] = 'Hello from server'
+       a = json.dumps(hi)
+       self.transport.write(a.encode('utf-8'))
     def dataReceived(self, data):
         d = data.decode('utf-8')
         struc = json.loads(d)
@@ -23,35 +25,50 @@ class Chat(Protocol):
             login = struc['login']
             password = struc['password']
             a = query_with_fetchone1(login, password)
+            auth = {}
+            auth['set'] = 'auth'
+            b = json.dumps(auth)
+            no_auth = {}
+            no_auth['set'] = 'no auth'
+            c = json.dumps(no_auth)
             if a == True:
-                self.transport.write('Welcome , you are registred'.encode('utf-8'))
+                self.transport.write(b.encode('utf-8'))
             else:
-                self.transport.write('Wrong data, try again('.encode('utf-8'))
+                self.transport.write(c.encode('utf-8'))
         elif struc['set'] == 'registr':
             del struc['set']
             login = struc['login']
             password = struc['password']
             insert_book(login, password)
-            self.transport.write(('Welcome , you are registred').encode('utf-8'))
+            auth = {}
+            auth['set'] = 'auth'
+            b = json.dumps(auth)
+            self.transport.write(b.encode('utf-8'))
         elif struc['set'] == 'write message':
             del struc['set']
             message = "{}:{}".format(struc['sender'], struc['message'])
             c = struc['receipient']
             insert_book1(c, message)
-            self.transport.write('message sent'.encode('utf-8'))
+            bring = {}
+            bring['set'] = 'bring'
+            a = json.dumps(bring)
+            self.transport.write(a.encode('utf-8'))
         elif struc['set'] == 'Get':
             del struc['set']
             login = struc['nick']
-            list = []
+            mesg = {}
             b = query_with_fetchone(login)
-            string = str(b)
-            list.append(string)
-            list.append('GET')
+            mesg['set'] = 'GET'
+            mesg['mesg'] = b
+            cr = json.dumps(mesg)
             delete_book(login)
             if b == False:
-                self.transport.write('No messages(('.encode('utf-8'))
+                no_mesg = {}
+                no_mesg['set'] = 'no mesg'
+                a = json.dumps(no_mesg)
+                self.transport.write(a.encode('utf-8'))
             else:
-                self.transport.write((string).encode('utf-8'))
+                self.transport.write(cr.encode('utf-8'))
     def connectionLost(self, reason):
          print('dissconeted, reason:', reason)
          self.factory.numProtocols =- 1
