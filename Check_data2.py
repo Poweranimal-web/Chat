@@ -7,7 +7,6 @@ def query_with_fetchone(login):
         dbconfig = read_db_config()
         conn = MySQLConnection(**dbconfig)
         cursor = conn.cursor()
-        cursor = conn.cursor(buffered=True)
         cursor.execute("SELECT message FROM messages WHERE login=%s",args)
 
         row = cursor.fetchone()

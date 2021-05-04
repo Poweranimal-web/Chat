@@ -6,6 +6,7 @@ port = 9090
 check = input('Do you registred, already?')
 name = []
 registered = False
+filename = 'C:/Users/millioner/PycharmProjects/Chat/cln.py'
 class ClientChat(Protocol):
      def connectionMade(self):
          print('connected')
@@ -142,4 +143,5 @@ class ClientChatFactory(ClientFactory):
         connector.connect()
 reactor.connectTCP('localhost',port, ClientChatFactory())
 reactor.run()
+
 

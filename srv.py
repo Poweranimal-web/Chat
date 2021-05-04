@@ -9,7 +9,7 @@ from delete_data import delete_book
 port = 9090
 class Chat(Protocol):
     def __init__(self, factory, addr):
-        self.factory = (factory)
+        self.factory = factory
         self.factory.addr = addr
     def connectionMade(self):
        self.factory.numProtocols =+1
@@ -82,4 +82,5 @@ class ChatFactory(Factory):
         return Chat(self,addr)
 reactor.listenTCP(port,ChatFactory())
 reactor.run()
+
 
