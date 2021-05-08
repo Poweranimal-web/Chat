@@ -2,7 +2,6 @@ import json
 from twisted.internet import reactor, protocol, task
 from twisted.internet.protocol import ClientFactory, Protocol
 import time
-
 port = 9090
 check = input('Do you registred, already?')
 name = []
@@ -101,12 +100,16 @@ class ShowAllClients(Protocol):
         self.transport.write(a)
         if strick2['set'] == 'send users':
            showclients = True
+           print(strick2['users'])
+           print('Choose one')
     def connectionLost(self, reason):
         print('disconected')
 class ClientGetMessages(Protocol):
     def connectionMade(self):
         print('Get message connected')
     def dataReceived(self, data):
+            g = data.decode('utf-8')
+            strick3 = json.loads(g)
             set = {}
             b = ''.join(name)
             set['nick'] = b
@@ -114,6 +117,10 @@ class ClientGetMessages(Protocol):
             data2 = json.dumps(set)
             a = data2.encode('utf-8')
             self.transport.write(a)
+            if strick3['set'] == 'no mesg':
+                self.transport.write(a)
+            elif strick3['set'] == 'GET':
+                    print(strick3['mesg'])
     def connectionLost(self, reason):
         print('disconected')
 class ClientWriteMessages(Protocol):
@@ -154,11 +161,11 @@ def loopData():
     tm = time.time()
     if registered == False:
         reactor.connectTCP('localhost', port, ClientChatFactory())
-    elif registered == True:
+    elif showclients == False:
         reactor.connectTCP('localhost', port, ClientChatFactory(ShowAllClients()))
     elif showclients == True:
         reactor.connectTCP('localhost', port, ClientChatFactory(ClientGetMessages()))
-    else:
+    elif registered == True and showclients == True:
         reactor.connectTCP('localhost', port, ClientChatFactory(ClientWriteMessages()))
 loop = task.LoopingCall(loopData)
 loop.start(2)
