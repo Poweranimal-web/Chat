@@ -1,9 +1,14 @@
 from twisted.internet import reactor, protocol, task, threads
 from twisted.internet.protocol import ClientFactory, Protocol
+from twisted.web.client import Agent
+from twisted.web.error import Error
 import time
+import random
+
 port = 9090
 # Клиент  который  использует  абрику  для  создание   нового ПРОТОКОЛА  для  вычитывания даннх с  сервера
-
+answer=None
+tm = time.time()
 class ClientChat(Protocol):
      def sendMessage(self):
          login = input('Enter your  login')
@@ -17,20 +22,11 @@ class ClientChat(Protocol):
          a = data2.encode('utf-8')
          self.transport.write(a)
 
-     def authLogin(self, data):
-        print('auth login = ' + data.decode("utf-8"))
-        time.sleep(3)
-        self.transport.write('send data from 1-st'.encode("utf-8"))
-
      def dataReceived(self, data: str):
+         global answer
          print( data.decode("utf-8"))
-         # Вся  эта  логика  для примера !!!!!!!!!!
-         # Эта проверка для того что бы показать, что ожидание данных для консольного  клиента  блокирует весь клиент.
-         # В сервере  есть  логика  где  заложено  что отдаль ответ, где пользователь  авторизован
-         if data.decode("utf-8") == str('ok'):
-            self.authLogin(data)
-         else :
-            self.sendMessage()
+         answer=data.decode("utf-8")
+
 
      def connectionMade(self):
          print('connected')
@@ -39,13 +35,14 @@ class ClientChat(Protocol):
 class ClientGetMessages(Protocol):
 
     def authLogin(self, data):
-        print('get message = ' + data.decode("utf-8"))
-        # Make transformation with  messages if they exists.
-        time.sleep(5)
+        # time.sleep(5)
         self.transport.write('wait for data'.encode("utf-8"))
 
     def dataReceived(self, data: str):
-        self.authLogin(data)
+        global answer
+        answer = data.decode("utf-8")
+        print('get message = ' + data.decode("utf-8"))
+
 
     def connectionMade(self):
         print('Get message connected')
@@ -65,10 +62,17 @@ class ClientChatFactory(ClientFactory):
         print('ConnectionLost, reason:', reason)
         connector.connect()
 
-# Можно  сделать  какуе то  глобальную  переменную  для  того что бы передавая  на сервер  понимать  можно ли выдавать ил нет  сообщения  для  клиента
 
+def loopData():
+    global tm
+    print("answer={0}, time= {1}".format(answer, time.time()-tm))
+    tm = time.time()
+    if answer == str('ok'):
+        reactor.connectTCP('localhost', port, ClientChatFactory(ClientGetMessages()))
+    else:
+        reactor.connectTCP('localhost', port, ClientChatFactory())
 
-reactor.connectTCP('localhost',port, ClientChatFactory())
-reactor.connectTCP('localhost',port, ClientChatFactory(ClientGetMessages()))
+loop = task.LoopingCall(loopData)
+loop.start(2)
 reactor.run()
 

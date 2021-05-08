@@ -6,9 +6,10 @@ count = 0
 class Chat(Protocol):
 
     def __init__(self, factory, addr):
+        global count
         self.factory = factory
         self.factory.addr = addr
-        self.count = 0
+        self.count = count
 
     def connectionMade(self):
        self.factory.ips.append(self.factory.addr)
@@ -24,10 +25,11 @@ class Chat(Protocol):
          self.factory.ips.remove(self)
 
     def dataReceived(self, data:str):
+        global count
         print('count {0}'.format(self.count))
-        self.count = self.count + 1
+        count += 1
         # Это симуляция того что  прошла авторизация
-        if self.count>2:
+        if self.count>1:
             a = data.decode('utf-8')
             print('From Client:', data)
             self.transport.write('ok'.encode('utf-8'))
