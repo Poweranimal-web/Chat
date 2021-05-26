@@ -9,7 +9,6 @@ from delete_data import delete_book
 from mysql.connector import MySQLConnection, Error
 from python_mysql_dbconfig import read_db_config
 port = 9090
-
 class Chat(Protocol):
     def __init__(self, factory, addr):
         self.factory = factory

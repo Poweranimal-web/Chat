@@ -2,11 +2,12 @@ import json
 from twisted.internet import reactor, protocol, task
 from twisted.internet.protocol import ClientFactory, Protocol
 import time
+import asyncio
 port = 9090
 check = input('Do you registred, already?')
 name = []
 registered = False
-filename = 'C:/Users/millioner/PycharmProjects/Chat/cln.py'
+tm = time.time()
 class ClientChat(Protocol):
      def connectionMade(self):
          print('connected')
@@ -37,7 +38,7 @@ class ClientChat(Protocol):
                     data2 = json.dumps(data_auth)
                     a = data2.encode('utf-8')
                     self.transport.write(a)
-         if check == 'yes' and registered == False and strick['set'] == 'Hello from server':
+         elif check == 'yes' and registered == False and strick['set'] == 'Hello from server':
                 print('pls authoristing')
                 login = input('Enter your login: ')
                 if login in name:
@@ -76,9 +77,9 @@ class ClientChat(Protocol):
              self.transport.write(format_utf)
          elif strick['set'] == 'auth':
              registered = True
-             ClientGetMessages.dataReceived(self,data='GET')
+             loopData()
          elif strick['set'] == 'bring':
-             ClientGetMessages.dataReceived(self,data='GET')
+             loopData()
          elif strick['set']== 'no mesg' and registered==True:
                     data_login = {}
                     choose = input('Choose one that send message:')
@@ -115,12 +116,11 @@ class ClientChat(Protocol):
                     a = data2.encode('utf-8')
                     self.transport.write(a)
      def connectionLost(self, reason):
-         print('disconnected, reason:', reason)
+            print('disconnected, reason:', reason)
 class ClientGetMessages(Protocol):
     def connectionMade(self):
         print('Get message connected')
     def dataReceived(self, data):
-        if data =='GET':
             set = {}
             b = ''.join(name)
             set['nick'] = b
@@ -141,7 +141,16 @@ class ClientChatFactory(ClientFactory):
     def clientConnectionLost(self, connector, reason):
         print('ConnectionLost, reason:', reason)
         connector.connect()
-reactor.connectTCP('localhost',port, ClientChatFactory())
+def loopData():
+    global tm
+    print("registered={0}, time= {1}".format(registered, time.time()-tm))
+    tm = time.time()
+    if registered == True:
+        reactor.connectTCP('localhost', port, ClientChatFactory(ClientGetMessages()))
+    else:
+        reactor.connectTCP('localhost', port, ClientChatFactory())
+loop = task.LoopingCall(loopData)
+loop.start(2)
 reactor.run()
 
 
