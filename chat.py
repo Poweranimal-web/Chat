@@ -1,6 +1,7 @@
 import sys
 import time
-from PyQt5 import QtCore, QtGui, QtWidgets
+import PyQt5
+from PyQt5 import QtCore, QtGui, QtWidgets,Qt
 class InputBox(QtWidgets.QDialog):
     def __init__(self,parent=None):
         super(InputBox, self).__init__(parent)
@@ -318,7 +319,7 @@ class Ui_MainWindow2(object):
             self.pushButton_7.hide()
             self.pushButton_10.hide()
             self.pushButton_9.hide()
-            self.pushButton_9.hide()
+            self.pushButton_8.hide()
    def add_user(self):
         global id_button
         global count
@@ -329,8 +330,12 @@ class Ui_MainWindow2(object):
             self.listWidget.addItem(val)
    def onClicked(self, item):
             self.word = item.text()
-            self.listWidget_2.addItem(self.word)
-            self.listWidget_2.clicked.connect(self.open_chat)
+            self.find = self.listWidget_2.findItems(self.word,PyQt5.QtCore.Qt.MatchContains)
+            if len(self.find) > 0:
+                            pass
+            else:
+                self.listWidget_2.addItem(self.word)
+                self.listWidget_2.clicked.connect(self.open_chat)
    def conn(self):
          message_send = self.textEdit.toPlainText()
          self.plainTextEdit.appendPlainText(message_send)
@@ -344,7 +349,7 @@ class Ui_MainWindow2(object):
        self.pushButton_7.show()
        self.pushButton_10.show()
        self.pushButton_9.show()
-       self.pushButton_9.show()
+       self.pushButton_8.show()
        self.label_4.hide()
        self.label_5.hide()
        self.label_6.hide()
