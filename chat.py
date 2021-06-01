@@ -1,7 +1,7 @@
 import sys
 import time
 import PyQt5
-from PyQt5 import QtCore, QtGui, QtWidgets,Qt
+from PyQt5 import QtCore, QtGui, QtWidgets
 class InputBox(QtWidgets.QDialog):
     def __init__(self,parent=None):
         super(InputBox, self).__init__(parent)
@@ -332,7 +332,7 @@ class Ui_MainWindow2(object):
             self.word = item.text()
             self.find = self.listWidget_2.findItems(self.word,PyQt5.QtCore.Qt.MatchContains)
             if len(self.find) > 0:
-                            pass
+                pass
             else:
                 self.listWidget_2.addItem(self.word)
                 self.listWidget_2.clicked.connect(self.open_chat)
