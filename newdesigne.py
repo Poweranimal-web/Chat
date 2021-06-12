@@ -23,7 +23,7 @@ send_messege = {}
 registered = False
 showclient = False
 write = False
-check_mess = False
+get_mess = False
 tm = time.time()
 inf = {}
 message = {}
@@ -811,6 +811,7 @@ class GetMessages(Protocol):
             global showclient
             global registered
             global write
+            global  get_mess
             g = data.decode('utf-8')
             strick3 = json.loads(g)
             set2 = {}
@@ -834,7 +835,13 @@ class GetMessages(Protocol):
             elif strick3['set'] == 'no mesg':
                     print('No mesg')
             elif strick3['set'] == 'GET':
-                    print(strick3['mesg'])
+                    del strick3['set']
+                    for key,value in strick3.items():
+                        get_mess = True
+                        d = ''.join(value)
+                        self.add_mess(d)
+    def add_mess(self, item):
+        self.ui2.plainTextEdit.appendPlainText(item)
     def add_user2(self):
         global user
         b = ''.join(user)
@@ -852,7 +859,7 @@ class ClientWriteMessages(Protocol):
     def dataReceived(self, data):
         global name
         global bring_user
-        global  write
+        global write
         global send_messege
         g = data.decode('utf-8')
         strick3 = json.loads(g)

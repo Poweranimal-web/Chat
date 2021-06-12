@@ -7,6 +7,7 @@ from write_data2 import insert_book1
 from Check_data2 import query_with_fetchone
 from delete_data import delete_book
 from find_friends import find_friend
+from Check_data3 import query_with_fetchall
 from mysql.connector import MySQLConnection, Error
 from python_mysql_dbconfig import read_db_config
 port = 9090
@@ -30,14 +31,14 @@ class Chat(Protocol):
             a = query_with_fetchone1(login, password)
             auth = {}
             auth['set'] = 'auth'
-            b = json.dumps(auth)
+            c = json.dumps(auth)
             no_auth = {}
             no_auth['set'] = 'no auth'
-            c = json.dumps(no_auth)
+            g = json.dumps(no_auth)
             if a == True:
-                self.transport.write(b.encode('utf-8'))
-            else:
                 self.transport.write(c.encode('utf-8'))
+            else:
+                self.transport.write(g.encode('utf-8'))
         elif struc['set'] == 'registr':
             del struc['set']
             login = struc['login']
@@ -45,8 +46,8 @@ class Chat(Protocol):
             insert_book(login, password)
             auth = {}
             auth['set'] = 'auth'
-            b = json.dumps(auth)
-            self.transport.write(b.encode('utf-8'))
+            k = json.dumps(auth)
+            self.transport.write(k.encode('utf-8'))
         elif struc['set'] == 'write message':
             del struc['set']
             message = "{}:{}".format(struc['sender'], struc['message'])
@@ -59,18 +60,15 @@ class Chat(Protocol):
         elif struc['set'] == 'Get':
             del struc['set']
             login = struc['nick']
-            mesg = {}
-            b = query_with_fetchone(login)
-            mesg['set'] = 'GET'
-            mesg['mesg'] = b
-            cr = json.dumps(mesg)
+            q = query_with_fetchall(login)
             delete_book(login)
-            if b == False:
+            if q['set'] == 'no':
                 no_mesg = {}
                 no_mesg['set'] = 'no mesg'
                 a = json.dumps(no_mesg)
                 self.transport.write(a.encode('utf-8'))
             else:
+                cr = json.dumps(q)
                 self.transport.write(cr.encode('utf-8'))
         # elif struc['set'] == 'GET USERS':
         #     try:
