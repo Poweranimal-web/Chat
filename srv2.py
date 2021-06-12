@@ -6,6 +6,7 @@ from check_data import query_with_fetchone1
 from write_data2 import insert_book1
 from Check_data2 import query_with_fetchone
 from delete_data import delete_book
+from find_friends import find_friend
 from mysql.connector import MySQLConnection, Error
 from python_mysql_dbconfig import read_db_config
 port = 9090
@@ -71,31 +72,45 @@ class Chat(Protocol):
                 self.transport.write(a.encode('utf-8'))
             else:
                 self.transport.write(cr.encode('utf-8'))
-        elif struc['set'] == 'GET USERS':
-            try:
-                dbconfig = read_db_config()
-                conn = MySQLConnection(**dbconfig)
-                cursor = conn.cursor()
-                cursor.execute("SELECT login FROM users")
-                rows = cursor.fetchall()
-                users = []
-
-                for row in rows:
-                    users.append(row)
-
-
-            except Error as e:
-                print(e)
-
-            finally:
-                users2 = {}
-                users2['set'] = 'send users'
-                users2['users'] = users
-                dec = json.dumps(users2)
-                enc = dec.encode('utf-8')
-                self.transport.write(enc)
-                cursor.close()
-                conn.close()
+        # elif struc['set'] == 'GET USERS':
+        #     try:
+        #         dbconfig = read_db_config()
+        #         conn = MySQLConnection(**dbconfig)
+        #         cursor = conn.cursor()
+        #         cursor.execute("SELECT login FROM users")
+        #         rows = cursor.fetchall()
+        #         users = []
+        #
+        #         for row in rows:
+        #             users.append(row)
+        #
+        #
+        #     except Error as e:
+        #         print(e)
+        #
+        #     finally:
+        #         users2 = {}
+        #         users2['set'] = 'send users'
+        #         users2['users'] = users
+        #         dec = json.dumps(users2)
+        #         enc = dec.encode('utf-8')
+        #         self.transport.write(enc)
+        #         cursor.close()
+        #         conn.close()
+        elif struc['set'] == 'find friend':
+            answer = {}
+            answer2 = {}
+            del struc['set']
+            c = struc['user']
+            b = find_friend(c)
+            answer['set'] = 'OK'
+            answer2['set'] = 'NO'
+            g = json.dumps(answer)
+            h = json.dumps(answer2)
+            if b == True:
+                self.transport.write(g.encode('utf-8'))
+            else:
+                self.transport.write(h.encode('utf-8'))
     def connectionLost(self, reason):
          print('dissconeted, reason:', reason)
          self.factory.numProtocols =- 1
