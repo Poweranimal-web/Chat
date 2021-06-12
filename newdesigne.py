@@ -18,6 +18,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 port = 9090
 name = []
 user = []
+bring_user = []
+send_messege = {}
 registered = False
 showclient = False
 write = False
@@ -618,7 +620,7 @@ class Ui_MainWindow2(object):
             self.tabWidget.setCurrentIndex(0)
             QtCore.QMetaObject.connectSlotsByName(MainWindow)
             self.pushButton_11.clicked.connect(self.add_user)
-            self.pushButton_10.clicked.connect(self.conn)
+            self.pushButton_10.clicked.connect(self.bring_messege)
             self.textEdit.setPlaceholderText('write message')
             self.pushButton_3.setCheckable(True)
             self.pushButton_3.clicked.connect(self.show_wid)
@@ -650,10 +652,15 @@ class Ui_MainWindow2(object):
             else:
                 self.listWidget_2.addItem(self.word)
                 self.listWidget_2.clicked.connect(self.open_chat)
-   def conn(self):
-         message_send = self.textEdit.toPlainText()
-         self.plainTextEdit.appendPlainText(message_send)
-         self.textEdit.clear()
+   def bring_messege(self):
+       global bring_user
+       global send_messege
+       word2 = self.listWidget_2.currentItem()
+       b = word2.text()
+       bring_user.append(b)
+       message_send = self.textEdit.toPlainText()
+       send_messege['messege'] = message_send
+       reactor.connectTCP('localhost', port, ClientChatFactory5())
    def open_chat(self):
        self.label.show()
        self.label_2.show()
@@ -803,6 +810,7 @@ class GetMessages(Protocol):
     def dataReceived(self, data):
             global showclient
             global registered
+            global write
             g = data.decode('utf-8')
             strick3 = json.loads(g)
             set2 = {}
@@ -820,6 +828,9 @@ class GetMessages(Protocol):
             elif showclient == True:
                 showclient = False
                 self.add_user2()
+            elif write == True:
+                write = False
+                self.bring_messege2()
             elif strick3['set'] == 'no mesg':
                     print('No mesg')
             elif strick3['set'] == 'GET':
@@ -829,22 +840,38 @@ class GetMessages(Protocol):
         b = ''.join(user)
         self.ui2.listWidget.addItem(b)
         user.pop()
+    def bring_messege2(self):
+        message_send = self.ui2.textEdit.toPlainText()
+        self.ui2.plainTextEdit.appendPlainText(message_send)
+        self.ui2.textEdit.clear()
     def connectionLost(self, reason):
         print('disconected')
 class ClientWriteMessages(Protocol):
     def connectionMade(self):
-        print('Get message connected')
+        print('Send message connected')
     def dataReceived(self, data):
-        data_login = {}
-        b = ''.join(name)
-        print(b)
-        data_login['sender'] = b
-        data_login['receipient'] = 'Dima'
-        data_login['set'] = 'write message'
-        data_login['message'] = message['message']
-        string = json.dumps(data_login)
-        format_utf = string.encode('utf-8')
-        self.transport.write(format_utf)
+        global name
+        global bring_user
+        global  write
+        global send_messege
+        g = data.decode('utf-8')
+        strick3 = json.loads(g)
+        if strick3['set'] == 'Hello from server':
+            data_login = {}
+            b = ''.join(name[0])
+            c = ''.join(bring_user)
+            data_login['sender'] = b
+            data_login['receipient'] = c
+            data_login['set'] = 'write message'
+            data_login['message'] = send_messege['messege']
+            string = json.dumps(data_login)
+            format_utf = string.encode('utf-8')
+            self.transport.write(format_utf)
+        if strick3['set'] == 'bring':
+            print('sent')
+            bring_user.clear()
+            del send_messege['messege']
+            write = True
     def connectionLost(self, reason):
         print('disconected')
 class AddChat(Protocol):
@@ -907,6 +934,15 @@ class ClientChatFactory4(ClientFactory):
         print('ConnectionFailed, reason:', reason)
     def clientConnectionLost(self, connector, reason):
         print('ConnectionLost, reason:', reason)
+class ClientChatFactory5(ClientFactory):
+    def startedConnecting(self, connector):
+            print('connect..')
+    def buildProtocol(self, addr):
+            return ClientWriteMessages()
+    def clientConnectionFailed(self, connector, reason):
+            print('ConnectionFailed, reason:', reason)
+    def clientConnectionLost(self, connector, reason):
+            print('ConnectionLost, reason:', reason)
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     import qt5reactor
