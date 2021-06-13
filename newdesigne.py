@@ -15,6 +15,7 @@ from twisted.internet import task, protocol
 from twisted.internet.protocol import ClientFactory, Protocol
 import PyQt5
 from PyQt5 import QtCore, QtGui, QtWidgets
+from emoji import emojize
 port = 9090
 name = []
 user = []
@@ -618,12 +619,168 @@ class Ui_MainWindow2(object):
             MainWindow.setCentralWidget(self.centralwidget)
             self.retranslateUi(MainWindow)
             self.tabWidget.setCurrentIndex(0)
+            self.emoji = QtWidgets.QScrollArea(self.centralwidget)
+            self.emoji.setGeometry(QtCore.QRect(690, -1, 190, 551))
+            self.emoji.setObjectName("emoji")
+            self.emoji.setObjectName("emoji")
+            self.pushButton_12 = QtWidgets.QPushButton(self.emoji)
+            self.pushButton_12.setGeometry(QtCore.QRect(15, 0, 51, 41))
+            self.pushButton_12.setStyleSheet("QPushButton{\n"
+                                          "\n"
+                                          "border: 0;\n"
+                                          "\n"
+                                          "\n"
+                                          "\n"
+                                          "\n"
+                                          "\n"
+                                          "}")
+            icon = QtGui.QIcon()
+            icon.addPixmap(
+                QtGui.QPixmap("C:/Users/millioner/PycharmProjects/Chat/743191-smileys/png/001-suspicious-1.png"),
+                QtGui.QIcon.Normal, QtGui.QIcon.Off)
+            self.pushButton_12.setIcon(icon)
+            self.pushButton_12.setIconSize(QtCore.QSize(30, 30))
+            self.pushButton_12.setObjectName("pushButton_12")
+            self.pushButton_13 = QtWidgets.QPushButton(self.emoji)
+            self.pushButton_13.setGeometry(QtCore.QRect(65, 0, 51, 41))
+            self.pushButton_13.setStyleSheet("QPushButton{\n"
+                                            "\n"
+                                            "border: 0;\n"
+                                            "\n"
+                                            "\n"
+                                            "\n"
+                                            "\n"
+                                            "\n"
+                                            "}")
+            icon1 = QtGui.QIcon()
+            icon1.addPixmap(
+                QtGui.QPixmap("C:/Users/millioner/PycharmProjects/Chat/743191-smileys/png/006-happy-14.png"),
+                QtGui.QIcon.Normal, QtGui.QIcon.Off)
+            self.pushButton_13.setIcon(icon1)
+            self.pushButton_13.setIconSize(QtCore.QSize(30, 30))
+            self.pushButton_13.setObjectName("pushButton_13")
+            self.pushButton_14 = QtWidgets.QPushButton(self.emoji)
+            self.pushButton_14.setGeometry(QtCore.QRect(115, 0, 51, 41))
+            self.pushButton_14.setStyleSheet("QPushButton{\n"
+                                            "\n"
+                                            "border: 0;\n"
+                                            "\n"
+                                            "\n"
+                                            "\n"
+                                            "\n"
+                                            "\n"
+                                            "}")
+            icon2 = QtGui.QIcon()
+            icon2.addPixmap(
+                QtGui.QPixmap("C:/Users/millioner/PycharmProjects/Chat/743191-smileys/png/022-laughing-2.png"),
+                QtGui.QIcon.Normal, QtGui.QIcon.Off)
+            self.pushButton_14.setIcon(icon2)
+            self.pushButton_14.setIconSize(QtCore.QSize(30, 30))
+            self.pushButton_14.setObjectName("pushButton_14")
+            self.pushButton_15 = QtWidgets.QPushButton(self.emoji)
+            self.pushButton_15.setGeometry(QtCore.QRect(15, 40, 51, 41))
+            self.pushButton_15.setStyleSheet("QPushButton{\n"
+                                            "\n"
+                                            "border: 0;\n"
+                                            "\n"
+                                            "\n"
+                                            "\n"
+                                            "\n"
+                                            "\n"
+                                            "}")
+            icon3 = QtGui.QIcon()
+            icon3.addPixmap(
+                QtGui.QPixmap("C:/Users/millioner/PycharmProjects/Chat/743191-smileys/png/005-sweating.png"),
+                QtGui.QIcon.Normal, QtGui.QIcon.Off)
+            self.pushButton_15.setIcon(icon3)
+            self.pushButton_15.setIconSize(QtCore.QSize(30, 30))
+            self.pushButton_15.setObjectName("pushButton_15")
+            self.pushButton_16 = QtWidgets.QPushButton(self.emoji)
+            self.pushButton_16.setGeometry(QtCore.QRect(65, 40, 51, 41))
+            self.pushButton_16.setStyleSheet("QPushButton{\n"
+                                            "\n"
+                                            "border: 0;\n"
+                                            "\n"
+                                            "\n"
+                                            "\n"
+                                            "\n"
+                                            "\n"
+                                            "}")
+            icon4 = QtGui.QIcon()
+            icon4.addPixmap(
+                QtGui.QPixmap("C:/Users/millioner/PycharmProjects/Chat/743191-smileys/png/058-crying-1.png"),
+                QtGui.QIcon.Normal, QtGui.QIcon.Off)
+            self.pushButton_16.setIcon(icon4)
+            self.pushButton_16.setIconSize(QtCore.QSize(30, 30))
+            self.pushButton_16.setObjectName("pushButton_16")
+            self.pushButton_17 = QtWidgets.QPushButton(self.emoji)
+            self.pushButton_17.setGeometry(QtCore.QRect(115, 40, 51, 41))
+            self.pushButton_17.setStyleSheet("QPushButton{\n"
+                                            "\n"
+                                            "border: 0;\n"
+                                            "\n"
+                                            "\n"
+                                            "\n"
+                                            "\n"
+                                            "\n"
+                                            "}")
+            icon5 = QtGui.QIcon()
+            icon5.addPixmap(QtGui.QPixmap("C:/Users/millioner/PycharmProjects/Chat/743191-smileys/png/020-cool-1.png"),
+                            QtGui.QIcon.Normal, QtGui.QIcon.Off)
+            self.pushButton_17.setIcon(icon5)
+            self.pushButton_17.setIconSize(QtCore.QSize(30, 30))
+            self.pushButton_17.setObjectName("pushButton_17")
+            self.pushButton_18 = QtWidgets.QPushButton(self.emoji)
+            self.pushButton_18.setGeometry(QtCore.QRect(15, 80, 51, 41))
+            self.pushButton_18.setStyleSheet("QPushButton{\n"
+                                            "\n"
+                                            "border: 0;\n"
+                                            "\n"
+                                            "\n"
+                                            "\n"
+                                            "\n"
+                                            "\n"
+                                            "}")
+            icon6 = QtGui.QIcon()
+            icon6.addPixmap(QtGui.QPixmap("C:/Users/millioner/PycharmProjects/Chat/743191-smileys/png/032-dead-2.png"),
+                            QtGui.QIcon.Normal, QtGui.QIcon.Off)
+            self.pushButton_18.setIcon(icon6)
+            self.pushButton_18.setIconSize(QtCore.QSize(30, 30))
+            self.pushButton_18.setObjectName("pushButton_18")
+            self.pushButton_19 = QtWidgets.QPushButton(self.emoji)
+            self.pushButton_19.setGeometry(QtCore.QRect(65, 80, 51, 41))
+            self.pushButton_19.setStyleSheet("QPushButton{\n"
+                                            "\n"
+                                            "border: 0;\n"
+                                            "\n"
+                                            "\n"
+                                            "\n"
+                                            "\n"
+                                            "\n"
+                                            "}")
+            icon7 = QtGui.QIcon()
+            icon7.addPixmap(QtGui.QPixmap("C:/Users/millioner/PycharmProjects/Chat/743191-smileys/png/027-sad-6.png"),
+                            QtGui.QIcon.Normal, QtGui.QIcon.Off)
+            self.pushButton_19.setIcon(icon7)
+            self.pushButton_19.setIconSize(QtCore.QSize(30, 30))
+            self.pushButton_19.setObjectName("pushButton_19")
             QtCore.QMetaObject.connectSlotsByName(MainWindow)
             self.pushButton_11.clicked.connect(self.add_user)
             self.pushButton_10.clicked.connect(self.bring_messege)
             self.textEdit.setPlaceholderText('write message')
             self.pushButton_3.setCheckable(True)
+            self.pushButton_9.setCheckable(True)
             self.pushButton_3.clicked.connect(self.show_wid)
+            self.pushButton_9.clicked.connect(self.show_wid2)
+            self.pushButton_12.clicked.connect(self.smile1)
+            self.pushButton_13.clicked.connect(self.smile2)
+            self.pushButton_14.clicked.connect(self.smile3)
+            self.pushButton_15.clicked.connect(self.smile4)
+            self.pushButton_16.clicked.connect(self.smile5)
+            self.pushButton_17.clicked.connect(self.smile6)
+            self.pushButton_18.clicked.connect(self.smile7)
+            self.pushButton_19.clicked.connect(self.smile8)
+            self.emoji.hide()
             self.widget_2.hide()
             self.label.hide()
             self.label_2.hide()
@@ -634,6 +791,45 @@ class Ui_MainWindow2(object):
             self.pushButton_10.hide()
             self.pushButton_9.hide()
             self.pushButton_8.hide()
+   def smile1(self):
+       self.textEdit.append('\U0001f928')
+   def smile2(self):
+       self.textEdit.append('\U0001F604')
+   def smile3(self):
+       self.textEdit.append('\U0001F923')
+   def smile4(self):
+       self.textEdit.append('\U0001F605')
+   def smile5(self):
+       self.textEdit.append('\U0001F62D')
+   def smile6(self):
+       self.textEdit.append('\U0001F60E')
+   def smile7(self):
+       self.textEdit.append('\U0001F635')
+   def smile8(self):
+       self.textEdit.append('\U0001F622')
+   def show_wid2(self):
+       if self.pushButton_9.isChecked():
+           self.emoji.show()
+           self.label_3.setGeometry(QtCore.QRect(80, 25, 61, 21))
+           self.pushButton_6.setGeometry(QtCore.QRect(180, 10, 75, 51))
+           self.pushButton_5.setGeometry(QtCore.QRect(280, 10, 75, 51))
+           self.pushButton_3.setGeometry(QtCore.QRect(380, 10, 75, 51))
+           self.widget.setGeometry(QtCore.QRect(240, 0, 470, 80))
+           self.plainTextEdit.setGeometry(QtCore.QRect(220, 80, 470, 421))
+           self.textEdit.setGeometry(QtCore.QRect(360, 501, 200, 51))
+           self.pushButton_10.setGeometry(QtCore.QRect(570, 506, 41, 41))
+           self.pushButton_7.setGeometry(QtCore.QRect(625, 506, 41, 41))
+       else:
+           self.emoji.hide()
+           self.label_3.setGeometry(QtCore.QRect(80, 25, 61, 21))
+           self.pushButton_6.setGeometry(QtCore.QRect(370, 10, 75, 51))
+           self.pushButton_5.setGeometry(QtCore.QRect(470, 10, 75, 51))
+           self.pushButton_3.setGeometry(QtCore.QRect(570, 10, 75, 51))
+           self.widget.setGeometry(QtCore.QRect(240, 0, 641, 80))
+           self.plainTextEdit.setGeometry(QtCore.QRect(220, 80, 658, 421))
+           self.textEdit.setGeometry(QtCore.QRect(360, 501, 401, 51))
+           self.pushButton_10.setGeometry(QtCore.QRect(770, 506, 41, 41))
+           self.pushButton_7.setGeometry(QtCore.QRect(830, 506, 41, 41))
    def add_user(self):
         global id_button
         global count
@@ -833,7 +1029,7 @@ class GetMessages(Protocol):
                 write = False
                 self.bring_messege2()
             elif strick3['set'] == 'no mesg':
-                    print('No mesg')
+                    pass
             elif strick3['set'] == 'GET':
                     del strick3['set']
                     for key,value in strick3.items():
