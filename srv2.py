@@ -1,7 +1,6 @@
 import builtins
 import os
 import json
-from twisted.internet import reactor, protocol
 from twisted.internet.protocol import Factory, Protocol
 from write_data import insert_book
 from check_data import query_with_fetchone1
@@ -12,24 +11,31 @@ from find_friends import find_friend
 from Check_data3 import query_with_fetchall
 from mysql.connector import MySQLConnection, Error
 from python_mysql_dbconfig import read_db_config
+from twisted.protocols.policies import TimeoutMixin
+from twisted.internet import error
+from twisted.python import log
+from twisted.internet import reactor, protocol
+# from twisted.internet import gireactor # for non-GUI apps
+# gireactor.install()
 port = 9090
 information_file = {}
-class Chat(Protocol):
+class Chat(Protocol, TimeoutMixin):
     def __init__(self, factory, addr):
         self.factory = factory
         self.factory.addr = addr
     def connectionMade(self):
        self.factory.numProtocols =+1
+       print(self.factory.numProtocols)
        hi = {}
        hi['set'] = 'Hello from server'
        a = json.dumps(hi)
        self.transport.write(a.encode('utf-8'))
+       log.startLogging(open(r'C:\Users\millioner\PycharmProjects\Chat\foo.log', 'w'))
     def dataReceived(self, data):
         global infromation_file
         try:
             d = data.decode('utf-8')
             struc = json.loads(d)
-            print(struc)
         except builtins.UnicodeDecodeError:
                 Chat2.dataReceived(self, data=data)
         else:
@@ -114,9 +120,6 @@ class Chat(Protocol):
                                 c = {}
                                 for root, dirs, filenames in os.walk(input_dir):
                                      for filename in filenames:
-                                            # with open("C:/Users/millioner/PycharmProjects/Chat/Files/%s/%s" % (struc['dir'] , filename), 'rb') as f:
-                                            #     # enlargement = os.path.splitext(base)[1]
-                                            #     dataf = f.read()
                                             c['filename'] = filename
                                             c['set'] = 'get'
                                             string = json.dumps(c)
@@ -160,10 +163,12 @@ class Chat2(Protocol):
             if os.path.exists("C:/Users/millioner/PycharmProjects/Chat/Files/%s" %(information_file['receipient'])) and os.path.isdir("C:/Users/millioner/PycharmProjects/Chat/Files/%s" % (information_file['receipient'])):
                 with open("C:/Users/millioner/PycharmProjects/Chat/Files/%s/%s" % (information_file['receipient'],information_file['filename']), 'wb') as f:
                     f.write(data)
+
             else:
                 os.mkdir("C:/Users/millioner/PycharmProjects/Chat/Files/%s" % (information_file['receipient']))
                 with open("C:/Users/millioner/PycharmProjects/Chat/Files/%s/%s" % (information_file['receipient'],information_file['filename']), 'wb') as f:
                     f.write(data)
+
 class ChatFactory(Factory):
     def __init__(self):
         self.client = []
@@ -172,6 +177,6 @@ class ChatFactory(Factory):
     def buildProtocol(self, addr):
         self.addr = addr
         return Chat(self,addr)
-reactor.listenTCP(port,ChatFactory())
+reactor.listenTCP(port, ChatFactory())
 reactor.run()
 

@@ -15,6 +15,7 @@ from twisted.internet import task, protocol
 from twisted.protocols.basic import FileSender
 from twisted import protocols
 from twisted.internet.protocol import ClientFactory, Protocol
+from twisted.protocols.policies import TimeoutMixin
 import PyQt5
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import *
@@ -829,7 +830,7 @@ class Ui_MainWindow2(object):
             file_extension.append(enlargement)
             file.append(base)
             fullfilename.append(input_file)
-            reactor.connectTCP('localhost', port, ClientChatFactory5())
+            reactor.connectTCP('localhost', port, ClientChatFactory7())
    def smile1(self):
        self.textEdit.append('\U0001f928')
    def smile2(self):
@@ -1100,6 +1101,100 @@ class ClientWriteMessages(Protocol):
         global write
         global send_messege
         global transport_message
+        g = data.decode('utf-8')
+        strick3 = json.loads(g)
+        if strick3['set'] == 'Hello from server' and transport_message == True:
+            data_login = {}
+            b = ''.join(name[0])
+            c = ''.join(bring_user[0])
+            data_login['sender'] = b
+            data_login['receipient'] = c
+            data_login['set'] = 'write message'
+            data_login['message'] = send_messege['messege']
+            string = json.dumps(data_login)
+            format_utf = string.encode('utf-8')
+            self.transport.write(format_utf)
+        elif strick3['set'] == 'bring':
+            print('sent')
+            print(send_messege)
+            bring_user.clear()
+            del send_messege['messege']
+            write = True
+            transport_message = False
+    def connectionLost(self, reason):
+        print('disconected')
+class AddChat(Protocol):
+    def connectionMade(self):
+        print('Get message connected')
+    def dataReceived(self, data):
+        global user
+        global showclient
+        c = data.decode('utf-8')
+        strick = json.loads(c)
+        b = ''.join(user)
+        if strick['set'] == 'Hello from server':
+            ask_login = {}
+            ask_login['user'] = b
+            ask_login['set'] = 'find friend'
+            string = json.dumps(ask_login)
+            format_utf = string.encode('utf-8')
+            self.transport.write(format_utf)
+        elif strick['set'] == 'OK':
+                print('ADD Chat')
+                showclient = True
+        elif strick['set'] == 'NO':
+            print('no user')
+            user.pop()
+    def connectionLost(self, reason):
+         print('disconected')
+class GetFile(Protocol):
+    def connectionMade(self):
+        print('Get file connected')
+    def dataReceived(self, data):
+        global name
+        global information_file
+        try:
+            g = data.decode('utf-8')
+            strick = json.loads(g)
+        except builtins.UnicodeDecodeError:
+                self.GetFile(file_data=data)
+        else:
+            if strick['set'] == 'Hello from server':
+                set3 = {}
+                b = ''.join(name[0])
+                set3['dir'] = b
+                set3['set'] = 'Check File'
+                string = json.dumps(set3)
+                format_utf = string.encode('utf-8')
+                self.transport.write(format_utf)
+            elif strick['set'] == 'no file':
+                            pass
+            elif strick['set'] == 'no exist':
+                            pass
+            elif strick['set'] == 'get':
+                    del strick['set']
+                    information_file['filename'] = strick['filename']
+                    v = {}
+                    v['set'] = 'transport file'
+                    b = ''.join(name[0])
+                    v['dir'] = b
+                    g = json.dumps(v)
+                    self.transport.write(g.encode('utf-8'))
+    def GetFile(self, file_data):
+        with open('D:/Python/Files/%s'% information_file['filename'], 'wb') as f:
+                f.write(file_data)
+                f.close()
+    def connectionLost(self, reason):
+        print('disconected')
+class SentFile(Protocol):
+    def connectionMade(self):
+        print('Sent file connected')
+    def dataReceived(self, data):
+        global name
+        global bring_user
+        global write
+        global send_messege
+        global transport_message
         global transport_file
         global file
         global fullfilename
@@ -1111,14 +1206,15 @@ class ClientWriteMessages(Protocol):
             print(file)
             print(bring_user)
             j = ''.join(fullfilename)
-            wfile = open(j, 'rb')
-            data2 = wfile.read()
-            self.transport.write(data2)
-            fullfilename.clear()
-            file.clear()
-            bring_user.clear()
-            file_extension.clear()
-            transport_file = False
+            with open(j, 'rb') as wfile:
+                data2 = wfile.read()
+                self.transport.write(data2)
+                wfile.close()
+                fullfilename.clear()
+                file.clear()
+                bring_user.clear()
+                file_extension.clear()
+                transport_file = False
         if strick3['set'] == 'Hello from server' and transport_file == True:
             data_file = {}
             j = ''.join(fullfilename)
@@ -1161,107 +1257,22 @@ class ClientWriteMessages(Protocol):
                 format_utf2 = string2.encode('utf-8')
                 self.transport.write(format_utf2)
             else:
-                wfile = open(j, 'r')
-                data = wfile.read()
-                print(data)
-                data_file['set'] = 'bring file'
-                data_file['sender'] = b
-                data_file['receipient'] = c
-                data_file['datafile'] = data
-                data_file['filename'] = d
-                data_file['fullfilename'] = j
-                # filesender.beginFileTransfer(data, self.transport)
-                string2 = json.dumps(data_file)
-                format_utf2 = string2.encode('utf-8')
-                self.transport.write(format_utf2)
-                file.clear()
-                bring_user.clear()
-        if strick3['set'] == 'Hello from server' and transport_message == True:
-            data_login = {}
-            b = ''.join(name[0])
-            c = ''.join(bring_user)
-            data_login['sender'] = b
-            data_login['receipient'] = c
-            data_login['set'] = 'write message'
-            data_login['message'] = send_messege['messege']
-            string = json.dumps(data_login)
-            format_utf = string.encode('utf-8')
-            self.transport.write(format_utf)
-        if strick3['set'] == 'bring':
-            print('sent')
-            bring_user.clear()
-            del send_messege['messege']
-            write = True
-            transport_message = False
-    def connectionLost(self, reason):
-        print('disconected')
-class AddChat(Protocol):
-    def connectionMade(self):
-        print('Get message connected')
-    def dataReceived(self, data):
-        global user
-        global showclient
-        c = data.decode('utf-8')
-        strick = json.loads(c)
-        b = ''.join(user)
-        if strick['set'] == 'Hello from server':
-            ask_login = {}
-            ask_login['user'] = b
-            ask_login['set'] = 'find friend'
-            string = json.dumps(ask_login)
-            format_utf = string.encode('utf-8')
-            self.transport.write(format_utf)
-        elif strick['set'] == 'OK':
-                print('ADD Chat')
-                showclient = True
-        elif strick['set'] == 'NO':
-            print('no user')
-            user.pop()
-    def connectionLost(self, reason):
-         print('disconected')
-class GetFile(Protocol):
-    def connectionMade(self):
-        print('Get file connected')
-    def dataReceived(self, data):
-        global name
-        global information_file
-        try:
-            g = data.decode('utf-8')
-            print(g)
-            strick = json.loads(g)
-        except builtins.UnicodeDecodeError:
-                self.GetFile(file_data=data)
-        else:
-            if strick['set'] == 'Hello from server':
-                set3 = {}
-                b = ''.join(name[0])
-                set3['dir'] = b
-                set3['set'] = 'Check File'
-                string = json.dumps(set3)
-                format_utf = string.encode('utf-8')
-                self.transport.write(format_utf)
-            elif strick['set'] == 'no file':
-                            pass
-            elif strick['set'] == 'no exist':
-                            pass
-            elif strick['set'] == 'get':
-                    del strick['set']
-                    information_file['filename'] = strick['filename']
-                    v = {}
-                    v['set'] = 'transport file'
-                    b = ''.join(name[0])
-                    v['dir'] = b
-                    g = json.dumps(v)
-                    self.transport.write(g.encode('utf-8'))
-    def GetFile(self, file_data):
-        # count1 = 0
-        # count2 = 1
-        # list_index1 = file_data[count2]
-        # list_index2 = file_data[count1]
-        with open('D:/Python/Files/%s'% information_file['filename'], 'wb') as f:
-                f.write(file_data)
-                # count1 += 1
-                # count2 += 1
+                with open(j, 'r') as wfile2:
+                    data = wfile2.read()
+                    print(data)
+                    data_file['set'] = 'bring file'
+                    data_file['sender'] = b
+                    data_file['receipient'] = c
+                    data_file['datafile'] = data
+                    data_file['filename'] = d
+                    data_file['fullfilename'] = j
+                    # filesender.beginFileTransfer(data, self.transport)
+                    string2 = json.dumps(data_file)
+                    format_utf2 = string2.encode('utf-8')
+                    self.transport.write(format_utf2)
+                    wfile2.close()
+                    file.clear()
+                    bring_user.clear()
     def connectionLost(self, reason):
         print('disconected')
 class ClientChatFactory(ClientFactory):
@@ -1318,6 +1329,15 @@ class ClientChatFactory6(ClientFactory):
             print('ConnectionFailed, reason:', reason)
     def clientConnectionLost(self, connector, reason):
             print('ConnectionLost, reason:', reason)
+class ClientChatFactory7(ClientFactory):
+    def startedConnecting(self, connector):
+            print('connect..')
+    def buildProtocol(self, addr):
+            return SentFile()
+    def clientConnectionFailed(self, connector, reason):
+            print('ConnectionFailed, reason:', reason)
+    def clientConnectionLost(self, connector, reason):
+            print('ConnectionLost, reason:', reason)
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     import qt5reactor
@@ -1328,6 +1348,7 @@ if __name__ == "__main__":
     ui.setupUi(MainWindow)
     MainWindow.show()
     reactor.run()
+
 
 
 
