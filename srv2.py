@@ -15,8 +15,6 @@ from twisted.protocols.policies import TimeoutMixin
 from twisted.internet import error
 from twisted.python import log
 from twisted.internet import reactor, protocol
-# from twisted.internet import gireactor # for non-GUI apps
-# gireactor.install()
 port = 9090
 information_file = {}
 class Chat(Protocol, TimeoutMixin):
