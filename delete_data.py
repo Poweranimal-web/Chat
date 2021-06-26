@@ -1,7 +1,7 @@
 from mysql.connector import MySQLConnection, Error
 from python_mysql_dbconfig import read_db_config
 
-def delete_book(login):
+def delete_message(login):
     db_config = read_db_config()
     args = (login,)
     query = "DELETE FROM messages WHERE login=%s"

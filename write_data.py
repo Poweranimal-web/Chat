@@ -1,7 +1,7 @@
 from mysql.connector import MySQLConnection, Error
 from python_mysql_dbconfig import read_db_config
 query = "INSERT INTO users(login,password)""VALUES(%s,%s)"
-def insert_book(login, password):
+def insert_user(login, password):
     args = (login, password)
     try:
         db_config = read_db_config()
