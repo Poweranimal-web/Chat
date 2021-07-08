@@ -12,9 +12,11 @@ from Check_data3 import query_with_fetchall
 from mysql.connector import MySQLConnection, Error
 from python_mysql_dbconfig import read_db_config
 from twisted.protocols.policies import TimeoutMixin
+from  twisted.internet.interfaces import IConsumer
 from twisted.internet import error
 from twisted.python import log
 from twisted.internet import reactor, protocol
+from twisted.protocols.basic import FileSender
 port = 9090
 information_file = {}
 class Chat(Protocol, TimeoutMixin):
@@ -27,7 +29,7 @@ class Chat(Protocol, TimeoutMixin):
        hi_from_server = {}
        hi_from_server['set'] = 'Hello from server'
        self.transport.write(json.dumps(hi_from_server).encode('utf-8'))
-       log.startLogging(open(r'C:\Users\millioner\PycharmProjects\Chat\foo.log', 'w'))
+       # log.startLogging(open(r'C:\Users\millioner\PycharmProjects\Chat\foo.log', 'w'))
     def dataReceived(self, data):
         global infromation_file
         try:
@@ -37,56 +39,56 @@ class Chat(Protocol, TimeoutMixin):
                 Chat2.dataReceived(self, data=data)
         else:
             if get_data_in_dict['set'] == 'auth':
-                        del get_data_in_dict['set']
-                        login = get_data_in_dict['login']
-                        password = get_data_in_dict['password']
-                        answer_db = query_with_fetchone1(login, password)
-                        auth = {}
-                        auth['set'] = 'auth'
-                        no_auth = {}
-                        no_auth['set'] = 'no auth'
-                        if answer_db == True:
-                            self.transport.write(json.dumps(auth).encode('utf-8'))
-                        else:
-                            self.transport.write(json.dumps(no_auth).encode('utf-8'))
+                            del get_data_in_dict['set']
+                            login = get_data_in_dict['login']
+                            password = get_data_in_dict['password']
+                            answer_db = query_with_fetchone1(login, password)
+                            auth = {}
+                            auth['set'] = 'auth'
+                            no_auth = {}
+                            no_auth['set'] = 'no auth'
+                            if answer_db == True:
+                                self.transport.write(json.dumps(auth).encode('utf-8'))
+                            else:
+                                self.transport.write(json.dumps(no_auth).encode('utf-8'))
             elif get_data_in_dict['set'] == 'registr':
-                        del get_data_in_dict['set']
-                        login = get_data_in_dict['login']
-                        password = get_data_in_dict['password']
-                        insert_user(login, password)
-                        auth = {}
-                        auth['set'] = 'auth'
-                        self.transport.write(json.dumps(auth).encode('utf-8'))
+                            del get_data_in_dict['set']
+                            login = get_data_in_dict['login']
+                            password = get_data_in_dict['password']
+                            insert_user(login, password)
+                            auth = {}
+                            auth['set'] = 'auth'
+                            self.transport.write(json.dumps(auth).encode('utf-8'))
             elif get_data_in_dict['set'] == 'write message':
-                        del get_data_in_dict['set']
-                        message = "{}:{}".format(get_data_in_dict['sender'], get_data_in_dict['message'])
-                        c = get_data_in_dict['receipient']
-                        insert_message(c, message)
-                        bring = {}
-                        bring['set'] = 'bring'
-                        self.transport.write(json.dumps(bring).encode('utf-8'))
+                            del get_data_in_dict['set']
+                            message = "{}:{}".format(get_data_in_dict['sender'], get_data_in_dict['message'])
+                            c = get_data_in_dict['receipient']
+                            insert_message(c, message)
+                            bring = {}
+                            bring['set'] = 'bring'
+                            self.transport.write(json.dumps(bring).encode('utf-8'))
             elif get_data_in_dict['set'] == 'Get':
-                        del get_data_in_dict['set']
-                        login = get_data_in_dict['nick']
-                        request_message = query_with_fetchall(login)
-                        delete_message(login)
-                        if request_message['set'] == 'no':
-                            no_mesg = {}
-                            no_mesg['set'] = 'no mesg'
-                            self.transport.write(json.dumps(no_mesg).encode('utf-8'))
-                        else:
-                            self.transport.write(json.dumps(request_message).encode('utf-8'))
+                            del get_data_in_dict['set']
+                            login = get_data_in_dict['nick']
+                            request_message = query_with_fetchall(login)
+                            delete_message(login)
+                            if request_message['set'] == 'no':
+                                no_mesg = {}
+                                no_mesg['set'] = 'no mesg'
+                                self.transport.write(json.dumps(no_mesg).encode('utf-8'))
+                            else:
+                                self.transport.write(json.dumps(request_message).encode('utf-8'))
             elif get_data_in_dict['set'] == 'find friend':
-                        answer = {}
-                        answer2 = {}
-                        del get_data_in_dict['set']
-                        answer3 = find_friend(get_data_in_dict['user'])
-                        answer['set'] = 'OK'
-                        answer2['set'] = 'NO'
-                        if answer3 == True:
-                            self.transport.write(json.dumps(answer).encode('utf-8'))
-                        else:
-                            self.transport.write(json.dumps(answer2).encode('utf-8'))
+                            answer = {}
+                            answer2 = {}
+                            del get_data_in_dict['set']
+                            answer3 = find_friend(get_data_in_dict['user'])
+                            answer['set'] = 'OK'
+                            answer2['set'] = 'NO'
+                            if answer3 == True:
+                                self.transport.write(json.dumps(answer).encode('utf-8'))
+                            else:
+                                self.transport.write(json.dumps(answer2).encode('utf-8'))
             elif get_data_in_dict['set'] == 'bring file':
                         os.mkdir("C:/Users/millioner/PycharmProjects/Chat/Files/%s" % get_data_in_dict['receipient'])
                         del get_data_in_dict['set']
@@ -140,19 +142,21 @@ class Chat(Protocol, TimeoutMixin):
          self.factory.numProtocols =- 1
 class Chat2(Protocol):
     def dataReceived(self, data):
+        print(data)
         if data == b'OK':
             r = {}
             r['set'] = 'get'
             self.transport.write(json.dumps(r).encode('utf-8'))
         else:
-            if os.path.exists("C:/Users/millioner/PycharmProjects/Chat/Files/%s" %(information_file['receipient'])) and os.path.isdir("C:/Users/millioner/PycharmProjects/Chat/Files/%s" % (information_file['receipient'])):
-                with open("C:/Users/millioner/PycharmProjects/Chat/Files/%s/%s" % (information_file['receipient'],information_file['filename']), 'wb') as f:
-                    f.write(data)
-
+            if os.path.exists("C:/Users/millioner/PycharmProjects/Chat/Files/%s" % (information_file['receipient'])) and os.path.isdir("C:/Users/millioner/PycharmProjects/Chat/Files/%s" % (information_file['receipient'])):
+                f = open("C:/Users/millioner/PycharmProjects/Chat/Files/%s/%s" % (information_file['receipient'], information_file['filename']), 'wb')
+                f.write(data)
+                f.close()
             else:
                 os.mkdir("C:/Users/millioner/PycharmProjects/Chat/Files/%s" % (information_file['receipient']))
-                with open("C:/Users/millioner/PycharmProjects/Chat/Files/%s/%s" % (information_file['receipient'],information_file['filename']), 'wb') as f:
-                    f.write(data)
+                f = open("C:/Users/millioner/PycharmProjects/Chat/Files/%s/%s" % ( information_file['receipient'], information_file['filename']), 'wb')
+                f.write(data)
+                f.close()
 class ChatFactory(Factory):
     def __init__(self):
         self.client = []
