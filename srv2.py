@@ -168,17 +168,17 @@ class Chat(Protocol, TimeoutMixin):
                         print((len(dataf)))
                         self.transport.write(dataf)
                         self.f2.close()
+                        source_dir = "C:/Users/millioner/PycharmProjects/Chat/Files/%s/transport file/%s" % (information_file['dirs'], file_name['name'])
+                        target_dir = "C:/Users/millioner/PycharmProjects/Chat/Files/%s/backup copy/%s" % (information_file['dirs'], file_name['name'])
+                        # переносим файл с одной папке в другую
+                        shutil.move(source_dir, target_dir)
                         # self.f3 = open("C:/Users/millioner/PycharmProjects/Chat/Files/%s/backup copy/%s" % (information_file['dirs'], filename), 'wb')
                         # self.f3.write(dataf)
                         # self.f3.close()
                         break
     #     global information_file
     #     global file_name
-    #     source_dir = "C:/Users/millioner/PycharmProjects/Chat/Files/%s/transport file/%s" % (information_file['dirs'], file_name['name'])
-    #     target_dir = "C:/Users/millioner/PycharmProjects/Chat/Files/%s/backup copy/%s" % (information_file['dirs'], file_name['name'])
     #     # print(information_file)
-
-    #     shutil.move(source_dir, target_dir)
     #     file_name.clear()
     #     information_file.clear()
     #     file_name.clear()
