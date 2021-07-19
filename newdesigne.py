@@ -31,6 +31,7 @@ user = []
 bring_user = []
 send_messege = {}
 file_extension = []
+file_size = []
 # size = 60000
 registered = False
 showclient = False
@@ -832,24 +833,21 @@ class Ui_MainWindow2(object):
        self.listWidget_3.setStyleSheet("QListWidget::item{"
                                        "background-color:black;"
                                        "}")
-       fullfilename.clear()
-       file.clear()
-       bring_user.clear()
-       file_extension.clear()
-       transport_file = False
    def open_windows_explorer(self):
         global transport_file
         global file
         global fullfilename
         global size
         global file_extension
+        global  file_size
         word2 = self.listWidget_2.currentItem()
         b = word2.text()
         bring_user.append(b)
         input_file = easygui.fileopenbox(filetypes=["*.docx"])
         # Просмотреть размер файла две строчки
-        # statinfo = os.stat(input_file)
-        # a = statinfo.st_size
+        statinfo = os.stat(input_file)
+        a = statinfo.st_size
+        file_size.append(a)
         transport_file = True
         if input_file == None:
             transport_file = False
@@ -1222,31 +1220,37 @@ class GetFile(Protocol):
             if get_data_in_dict6['set'] == 'Hello from server':
                 request = {}
                 login = ''.join(name[0])
-                request['dir'] = login
+                request['dirs'] = login
                 request['set'] = 'Check File'
                 request_in_string = json.dumps(request)
                 request_in_format_utf = request_in_string.encode('utf-8')
                 self.transport.write(request_in_format_utf)
             elif get_data_in_dict6['set'] == 'no file':
-                            # self.transport.loseConnection()
-                            pass
+                            self.transport.loseConnection()
             elif get_data_in_dict6['set'] == 'no exist':
-                            # self.transport.loseConnection()
-                            pass
+                            self.transport.loseConnection()
             elif get_data_in_dict6['set'] == 'get':
                     del get_data_in_dict6['set']
                     information_file['filename'] = get_data_in_dict6['filename']
+                    information_file['size'] = get_data_in_dict6['size']
                     request_on_transport_file = {}
                     request_on_transport_file['set'] = 'transport file'
                     login = ''.join(name[0])
                     request_on_transport_file['dir'] = login
                     request_on_transport_file_string = json.dumps(request_on_transport_file)
+                    self.f = open(r'D:/Python/Files/%s' % information_file['filename'], 'wb')
                     self.transport.write(request_on_transport_file_string.encode('utf-8'))
     def GetFile(self, file_data):
-        with open('D:/Python/Files/%s'% information_file['filename'], 'wb') as f:
-                    f.write(file_data)
+        if os.stat("D:/Python/Files/%s" % (information_file['filename'])).st_size == information_file['size']:
+            print('asasasa')
+        else:
+            self.f.write(file_data)
     def connectionLost(self, reason):
-        print('disconected')
+        try:
+            self.f.close()
+            print('disconected')
+        except builtins.AttributeError:
+                pass
 class SentFile(Protocol):
     def connectionMade(self):
         print('Sent file connected')
@@ -1261,91 +1265,107 @@ class SentFile(Protocol):
         global fullfilename
         global file_extension
         global Add_widget
-        get_data7 = data.decode('utf-8')
-        get_data_in_dict7 = json.loads(get_data7)
-        if get_data_in_dict7['set'] == 'get':
-            print(fullfilename)
-            print(file)
-            print(bring_user)
-            j = ''.join(fullfilename)
-            wfile = open(j, 'rb')
-                # data2 = wfile.read()
-            filesender = FileSender()
-            filesender.beginFileTransfer(wfile, self.transport)
-            filesender.resumeProducing()
-            filesender.pauseProducing()
-            filesender.resumeProducing()
-            filesender.pauseProducing()
-            filesender.resumeProducing()
-            wfile.close()
-                # self.transport.write(data2)
-            Add_widget = True
-        if get_data_in_dict7['set'] == 'Hello from server' and transport_file == True:
-            data_file = {}
-            fullfilename_q = ''.join(fullfilename)
-            login = ''.join(name[0])
-            recipient = ''.join(bring_user)
-            relative_file_path = ''.join(file)
-            extension = ''.join(file_extension)
-            if extension == '.png':
-                data_file['set'] = 'bring file2'
-                data_file['sender'] = login
-                data_file['receipient'] = recipient
-                data_file['file_extension'] = extension
-                data_file['filename'] = relative_file_path
-                data_file['fullfilename'] = fullfilename_q
-                # filesender.beginFileTransfer(data, self.transport)
-                data_file_string2 = json.dumps(data_file)
-                data_file_format_utf2 = data_file_string2.encode('utf-8')
-                self.transport.write(data_file_format_utf2)
-            elif extension == '.jpg':
-                data_file['set'] = 'bring file2'
-                data_file['sender'] = login
-                data_file['receipient'] = recipient
-                data_file['file_extension'] = extension
-                data_file['filename'] = relative_file_path
-                data_file['fullfilename'] = fullfilename_q
-                # filesender.beginFileTransfer(data, self.transport)
-                data_file_string2 = json.dumps(data_file)
-                data_file_format_utf2 = data_file_string2.encode('utf-8')
-                self.transport.write(data_file_format_utf2)
-            elif extension == '.jpeg':
-                data_file['set'] = 'bring file2'
-                data_file['sender'] = login
-                data_file['receipient'] = recipient
-                data_file['file_extension'] = extension
-                data_file['filename'] = relative_file_path
-                data_file['fullfilename'] = fullfilename_q
-                # filesender.beginFileTransfer(data, self.transport)
-                data_file_string2 = json.dumps(data_file)
-                data_file_format_utf2 = data_file_string2.encode('utf-8')
-                self.transport.write(data_file_format_utf2)
-            elif extension == '.pdf':
-                data_file['set'] = 'bring file2'
-                data_file['sender'] = login
-                data_file['receipient'] = recipient
-                data_file['file_extension'] = extension
-                data_file['filename'] = relative_file_path
-                data_file['fullfilename'] = fullfilename_q
-                data_file_string2 = json.dumps(data_file)
-                data_file_format_utf2 = data_file_string2.encode('utf-8')
-                self.transport.write(data_file_format_utf2)
-            else:
-                with open(fullfilename_q, 'r') as wfile2:
-                    data = wfile2.read()
-                    print(data)
-                    data_file['set'] = 'bring file'
+        global file_size
+        try:
+            get_data7 = data.decode('utf-8')
+            get_data_in_dict7 = json.loads(get_data7)
+        except json.decoder.JSONDecodeError:
+            pass
+        else:
+            if get_data_in_dict7['set'] == 'get':
+                print(fullfilename)
+                print(file)
+                print(bring_user)
+                j = ''.join(fullfilename)
+                if os.path.isfile(j):
+                    self.file3 = open(j, 'rb')
+                    data2 = self.file3.read()
+                    print(len(data2))
+                    if data2:
+                        print('length of  data ={}'.format(len(data2)))
+                        # Add_widget = True
+                        self.transport.write(data2)
+                        self.file3.close()
+                        fullfilename.clear()
+                        file.clear()
+                        bring_user.clear()
+                        file_extension.clear()
+                        transport_file = False
+                    else:
+                        self.transport.loseConnection()
+                else:
+                    self.transport.loseConnection()
+            elif get_data_in_dict7['set'] == 'Hello from server' and transport_file == True:
+                data_file = {}
+                fullfilename_q = ''.join(fullfilename)
+                login = ''.join(name[0])
+                recipient = ''.join(bring_user)
+                relative_file_path = ''.join(file)
+                extension = ''.join(file_extension)
+                if extension == '.png':
+                    data_file['set'] = 'bring file2'
                     data_file['sender'] = login
                     data_file['receipient'] = recipient
-                    data_file['datafile'] = data
+                    data_file['file_extension'] = extension
                     data_file['filename'] = relative_file_path
                     data_file['fullfilename'] = fullfilename_q
+                    data_file['filesize'] = int(file_size[0])
                     # filesender.beginFileTransfer(data, self.transport)
                     data_file_string2 = json.dumps(data_file)
                     data_file_format_utf2 = data_file_string2.encode('utf-8')
                     self.transport.write(data_file_format_utf2)
-                    file.clear()
-                    bring_user.clear()
+                elif extension == '.jpg':
+                    data_file['set'] = 'bring file2'
+                    data_file['sender'] = login
+                    data_file['receipient'] = recipient
+                    data_file['file_extension'] = extension
+                    data_file['filename'] = relative_file_path
+                    data_file['fullfilename'] = fullfilename_q
+                    data_file['filesize'] = int(file_size[0])
+                    # filesender.beginFileTransfer(data, self.transport)
+                    data_file_string2 = json.dumps(data_file)
+                    data_file_format_utf2 = data_file_string2.encode('utf-8')
+                    self.transport.write(data_file_format_utf2)
+                elif extension == '.jpeg':
+                    data_file['set'] = 'bring file2'
+                    data_file['sender'] = login
+                    data_file['receipient'] = recipient
+                    data_file['file_extension'] = extension
+                    data_file['filename'] = relative_file_path
+                    data_file['fullfilename'] = fullfilename_q
+                    data_file['filesize'] = int(file_size[0])
+                    # filesender.beginFileTransfer(data, self.transport)
+                    data_file_string2 = json.dumps(data_file)
+                    data_file_format_utf2 = data_file_string2.encode('utf-8')
+                    self.transport.write(data_file_format_utf2)
+                elif extension == '.pdf':
+                    data_file['set'] = 'bring file2'
+                    data_file['sender'] = login
+                    data_file['receipient'] = recipient
+                    data_file['file_extension'] = extension
+                    data_file['filename'] = relative_file_path
+                    data_file['fullfilename'] = fullfilename_q
+                    data_file['filesize'] = file_size
+                    data_file_string2 = json.dumps(data_file)
+                    data_file_format_utf2 = data_file_string2.encode('utf-8')
+                    self.transport.write(data_file_format_utf2)
+                else:
+                    with open(fullfilename_q, 'r') as wfile2:
+                        data = wfile2.read()
+                        print(data)
+                        data_file['set'] = 'bring file'
+                        data_file['sender'] = login
+                        data_file['receipient'] = recipient
+                        data_file['datafile'] = data
+                        data_file['filename'] = relative_file_path
+                        data_file['fullfilename'] = fullfilename_q
+                        data_file['filesize'] = file_size
+                        # filesender.beginFileTransfer(data, self.transport)
+                        data_file_string2 = json.dumps(data_file)
+                        data_file_format_utf2 = data_file_string2.encode('utf-8')
+                        self.transport.write(data_file_format_utf2)
+                        file.clear()
+                        bring_user.clear()
     # def show_file_in_chat(self):
     #     global name
     #     global bring_user
