@@ -111,26 +111,29 @@ class Chat(Protocol, TimeoutMixin):
                 if os.path.exists("C:/Users/millioner/PycharmProjects/Chat/Files/%s/transport file" % (information_file['receipient'])) and os.path.isdir("C:/Users/millioner/PycharmProjects/Chat/Files/%s/transport file" % (information_file['receipient'])):
                     filename = str(uuid.uuid4().hex + information_file['file_extension'])
                     information_file['file'] = filename
-                    if os.path.exists("C:/Users/millioner/PycharmProjects/Chat/Files/%s/transport file/%s" % (information_file['receipient'], filename)) and os.path.isfile("C:/Users/millioner/PycharmProjects/Chat/Files/%s/transport file/%s" % (information_file['receipient'],filename)):
-                        self.f = open("C:/Users/millioner/PycharmProjects/Chat/Files/%s/transport file/%s" % (information_file['receipient'], filename), 'wb')
-                        Chat2.dataReceived(self, data=b'OK')
-                    else:
-                        filename2 = str(uuid.uuid4().hex + information_file['file_extension'])
-                        information_file['file'] = filename2
-                        self.f = open("C:/Users/millioner/PycharmProjects/Chat/Files/%s/transport file/%s" % (information_file['receipient'], filename2), 'wb')
-                        Chat2.dataReceived(self, data=b'OK')
+                    # if os.path.exists("C:/Users/millioner/PycharmProjects/Chat/Files/%s/transport file/%s" % (information_file['receipient'], filename)) and os.path.isfile("C:/Users/millioner/PycharmProjects/Chat/Files/%s/transport file/%s" % (information_file['receipient'],filename)):
+                    #     filename2 = str(uuid.uuid4().hex + information_file['file_extension'])
+                    #     information_file['file'] = filename2
+                    #     self.f = open("C:/Users/millioner/PycharmProjects/Chat/Files/%s/transport file/%s" % (information_file['receipient'], filename2), 'ab')
+                    #     Chat2.dataReceived(self, data=b'OK')
+                    # else:
+                    #     self.f = open("C:/Users/millioner/PycharmProjects/Chat/Files/%s/transport file/%s" % (information_file['receipient'], filename), 'ab')
+                    #     Chat2.dataReceived(self, data=b'OK')
+                    self.f = open("C:/Users/millioner/PycharmProjects/Chat/Files/%s/transport file/%s" % (information_file['receipient'], filename), 'wb')
+                    Chat2.dataReceived(self, data=b'OK')
                 else:
                     os.mkdir("C:/Users/millioner/PycharmProjects/Chat/Files/%s/backup copy" % get_data_in_dict['receipient'])
                     os.mkdir("C:/Users/millioner/PycharmProjects/Chat/Files/%s/transport file" % get_data_in_dict['receipient'])
                     filename = str(uuid.uuid4().hex + information_file['file_extension'])
-                    if os.path.exists("C:/Users/millioner/PycharmProjects/Chat/Files/%s/transport file/%s" % (information_file['receipient'], filename)) and os.path.isfile("C:/Users/millioner/PycharmProjects/Chat/Files/%s/transport file/%s" % (information_file['receipient'],filename)):
-                        self.f = open("C:/Users/millioner/PycharmProjects/Chat/Files/%s/transport file/%s" % (information_file['receipient'], filename), 'wb')
-                        Chat2.dataReceived(self, data=b'OK')
-                    else:
-                        filename2 = str(uuid.uuid4().hex + information_file['file_extension'])
+                    # if os.path.exists("C:/Users/millioner/PycharmProjects/Chat/Files/%s/transport file/%s" % (information_file['receipient'], filename)) and os.path.isfile("C:/Users/millioner/PycharmProjects/Chat/Files/%s/transport file/%s" % (information_file['receipient'],filename)):
+                    #     filename = str(uuid.uuid4().hex + information_file['file_extension'])
                         # self.f = open("C:/Users/millioner/PycharmProjects/Chat/Files/%s/transport file/%s" % (information_file['receipient'], filename2), 'wb')
-                        self.f = open("C:/Users/millioner/PycharmProjects/Chat/Files/%s/transport file/%s" % (information_file['receipient'], filename2), 'wb')
-                        Chat2.dataReceived(self,data=b'OK')
+                    self.f = open("C:/Users/millioner/PycharmProjects/Chat/Files/%s/transport file/%s" % (
+                     information_file['receipient'], filename), 'wb')
+                    Chat2.dataReceived(self, data=b'OK')
+                        #
+                        # self.f = open("C:/Users/millioner/PycharmProjects/Chat/Files/%s/transport file/%s" % (information_file['receipient'], filename), 'wb')
+                        # Chat2.dataReceived(self, data=b'OK')
             elif get_data_in_dict['set'] == 'Check File':
                 information_file['dirs'] = get_data_in_dict['dirs']
                 del get_data_in_dict['set']
@@ -168,14 +171,11 @@ class Chat(Protocol, TimeoutMixin):
                         print((len(dataf)))
                         self.transport.write(dataf)
                         self.f2.close()
-                        source_dir = "C:/Users/millioner/PycharmProjects/Chat/Files/%s/transport file/%s" % (information_file['dirs'], file_name['name'])
-                        target_dir = "C:/Users/millioner/PycharmProjects/Chat/Files/%s/backup copy/%s" % (information_file['dirs'], file_name['name'])
-                        # переносим файл с одной папке в другую
-                        shutil.move(source_dir, target_dir)
-                        # self.f3 = open("C:/Users/millioner/PycharmProjects/Chat/Files/%s/backup copy/%s" % (information_file['dirs'], filename), 'wb')
-                        # self.f3.write(dataf)
-                        # self.f3.close()
                         break
+            elif get_data_in_dict['set'] == 'OK':
+                source_dir = "C:/Users/millioner/PycharmProjects/Chat/Files/%s/transport file/%s" % (get_data_in_dict['dir'], file_name['name'])
+                target_dir = "C:/Users/millioner/PycharmProjects/Chat/Files/%s/backup copy/%s" % (get_data_in_dict['dir'], file_name['name'])
+                os.replace(source_dir, target_dir)
     #     global information_file
     #     global file_name
     #     # print(information_file)

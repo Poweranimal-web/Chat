@@ -32,6 +32,7 @@ bring_user = []
 send_messege = {}
 file_extension = []
 file_size = []
+sum_data = 0
 # size = 60000
 registered = False
 showclient = False
@@ -165,7 +166,7 @@ class Ui_MainWindow1(object):
             password = self.lineEdit_2.text()
             inf['login'] = login
             inf['password'] = password
-            reactor.connectTCP('localhost', port, ClientChatFactory())
+            reactor.connectTCP('localhost', port,ClientChatFactory())
 class Ui_MainWindow(object):
         def conn(self):
             self.ui = Ui_MainWindow1()
@@ -821,18 +822,19 @@ class Ui_MainWindow2(object):
        global file
        global fullfilename
        global file_extension
-       widgetButton = QtWidgets.QPushButton()
-       self.label_11 = QtWidgets.QLabel(widgetButton)
-       self.label_11.setGeometry(QtCore.QRect(60, 20, 61, 31))
-       self.label_11.setAlignment(QtCore.Qt.AlignCenter)
-       self.label_11.setObjectName("label_11")
-       self.label_11.setText('HIIIIIIIIIIIIIII')
-       myQListWidgetItem = QtWidgets.QListWidgetItem()
-       self.listWidget_3.addItem(myQListWidgetItem)
-       self.listWidget_3.setItemWidget(myQListWidgetItem, widgetButton)
+       # widgetButton = QtWidgets.QPushButton()
+       # self.label_11 = QtWidgets.QLabel(widgetButton)
+       # self.label_11.setGeometry(QtCore.QRect(60, 20, 61, 31))
+       # self.label_11.setAlignment(QtCore.Qt.AlignCenter)
+       # self.label_11.setObjectName("label_11")
+       # self.label_11.setText('HIIIIIIIIIIIIIII')
+       # myQListWidgetItem = QtWidgets.QListWidgetItem()
        self.listWidget_3.setStyleSheet("QListWidget::item{"
-                                       "background-color:black;"
+                                       "background-color:green;"
+                                       "width:10px;"
                                        "}")
+       self.listWidget_3.addItem("мсмсмє")
+       # self.listWidget_3.setItemWidget(myQListWidgetItem, widgetButton)
    def open_windows_explorer(self):
         global transport_file
         global file
@@ -845,15 +847,15 @@ class Ui_MainWindow2(object):
         bring_user.append(b)
         input_file = easygui.fileopenbox(filetypes=["*.docx"])
         # Просмотреть размер файла две строчки
-        statinfo = os.stat(input_file)
-        a = statinfo.st_size
-        file_size.append(a)
         transport_file = True
         if input_file == None:
             transport_file = False
             file.clear()
             file_extension.clear()
         else:
+            statinfo = os.stat(input_file)
+            a = statinfo.st_size
+            file_size.append(a)
             base = os.path.basename(input_file)
             enlargement = os.path.splitext(base)[1]
             print(enlargement)
@@ -1211,11 +1213,15 @@ class GetFile(Protocol):
     def dataReceived(self, data):
         global name
         global information_file
+        global sum_data
+        global Add_widget
         try:
             get_data6 = data.decode('utf-8')
             get_data_in_dict6 = json.loads(get_data6)
         except builtins.UnicodeDecodeError:
-                self.GetFile(file_data=data)
+            len_data = int(len(data))
+            sum_data += len_data
+            self.GetFile(file_data=data)
         else:
             if get_data_in_dict6['set'] == 'Hello from server':
                 request = {}
@@ -1226,31 +1232,44 @@ class GetFile(Protocol):
                 request_in_format_utf = request_in_string.encode('utf-8')
                 self.transport.write(request_in_format_utf)
             elif get_data_in_dict6['set'] == 'no file':
-                            self.transport.loseConnection()
+                self.transport.loseConnection()
             elif get_data_in_dict6['set'] == 'no exist':
-                            self.transport.loseConnection()
+                self.transport.loseConnection()
             elif get_data_in_dict6['set'] == 'get':
-                    del get_data_in_dict6['set']
-                    information_file['filename'] = get_data_in_dict6['filename']
-                    information_file['size'] = get_data_in_dict6['size']
-                    request_on_transport_file = {}
-                    request_on_transport_file['set'] = 'transport file'
-                    login = ''.join(name[0])
-                    request_on_transport_file['dir'] = login
-                    request_on_transport_file_string = json.dumps(request_on_transport_file)
-                    self.f = open(r'D:/Python/Files/%s' % information_file['filename'], 'wb')
-                    self.transport.write(request_on_transport_file_string.encode('utf-8'))
+                del get_data_in_dict6['set']
+                information_file['filename'] = get_data_in_dict6['filename']
+                information_file['size'] = get_data_in_dict6['size']
+                request_on_transport_file = {}
+                request_on_transport_file['set'] = 'transport file'
+                login = ''.join(name[0])
+                request_on_transport_file['dir'] = login
+                request_on_transport_file_string = json.dumps(request_on_transport_file)
+                self.f = open(r'D:/Python/Files/%s' % information_file['filename'], 'wb')
+                self.transport.write(request_on_transport_file_string.encode('utf-8'))
     def GetFile(self, file_data):
-        if os.stat("D:/Python/Files/%s" % (information_file['filename'])).st_size == information_file['size']:
-            print('asasasa')
+        global sum_data
+        print(information_file['size'])
+        print(sum_data)
+        if sum_data == information_file['size']:
+            # os.stat("D:/Python/Files/%s" % (information_file['filename'])).st_size
+            self.f.write(file_data)
+            sum_data = 0
+            request = {}
+            request['set'] = 'OK'
+            request['dir'] = ''.join(name[0])
+            request_in_string = json.dumps(request)
+            request_in_format_utf = request_in_string.encode('utf-8')
+            Add_widget = True
+            self.transport.write(request_in_format_utf)
+            self.transport.loseConnection()
         else:
             self.f.write(file_data)
     def connectionLost(self, reason):
         try:
             self.f.close()
-            print('disconected')
+            print('disconected file')
         except builtins.AttributeError:
-                pass
+            pass
 class SentFile(Protocol):
     def connectionMade(self):
         print('Sent file connected')
@@ -1284,8 +1303,9 @@ class SentFile(Protocol):
                     if data2:
                         print('length of  data ={}'.format(len(data2)))
                         # Add_widget = True
-                        self.transport.write(data2)
                         self.file3.close()
+                        self.transport.write(data2)
+                        self.transport.loseConnection()
                         fullfilename.clear()
                         file.clear()
                         bring_user.clear()
@@ -1490,9 +1510,9 @@ class ClientChatFactory7(ClientFactory):
             print('ConnectionLost, reason:', reason)
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
+    MainWindow = QtWidgets.QMainWindow()
     import qt5reactor
     qt5reactor.install()
-    MainWindow = QtWidgets.QMainWindow()
     from twisted.internet import reactor
     ui = Ui_MainWindow1()
     ui.setupUi(MainWindow)
