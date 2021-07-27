@@ -17,6 +17,7 @@ from twisted import protocols
 from twisted.internet.protocol import ClientFactory, Protocol
 from twisted.protocols.policies import TimeoutMixin
 from twisted.internet.interfaces import IConsumer
+from twisted.python import log
 import PyQt5
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import *
@@ -829,11 +830,15 @@ class Ui_MainWindow2(object):
        # self.label_11.setObjectName("label_11")
        # self.label_11.setText('HIIIIIIIIIIIIIII')
        # myQListWidgetItem = QtWidgets.QListWidgetItem()
-       self.listWidget_3.setStyleSheet("QListWidget::item{"
+       newButton = QtWidgets.QPushButton()
+       listWidgetItem = QtWidgets.QListWidgetItem()
+       listWidgetItem.setSizeHint(newButton.sizeHint())
+       self.listWidget_3.setStyleSheet("QPushButton{"
                                        "background-color:green;"
-                                       "width:10px;"
+                                       "width:100px;"
                                        "}")
-       self.listWidget_3.addItem("мсмсмє")
+       self.listWidget_3.addItem(listWidgetItem)
+       self.listWidget_3.setItemWidget(listWidgetItem, newButton)
        # self.listWidget_3.setItemWidget(myQListWidgetItem, widgetButton)
    def open_windows_explorer(self):
         global transport_file
@@ -1104,7 +1109,7 @@ class GetMessages(Protocol):
                 self.bring_messege2()
         elif Add_widget == True:
             Add_widget = False
-            self.show_file_in_chat()
+            self.ui2.show_file_in_chat2()
         elif get_data_in_dict3['set'] == 'no mesg':
                     pass
         elif get_data_in_dict3['set'] == 'GET':
@@ -1148,8 +1153,8 @@ class GetMessages(Protocol):
         self.ui2.listWidget_3.setFocusPolicy(QtCore.Qt.NoFocus)
         self.ui2.listWidget_3.addItem(myQListWidgetItem)
         self.ui2.textEdit.clear()
-    def show_file_in_chat(self):
-        self.ui2.show_file_in_chat2()
+    # def show_file_in_chat(self):
+    #     self.ui2.show_file_in_chat2()
     def connectionLost(self, reason):
         print('disconected')
 class SentMessages(Protocol):
@@ -1210,6 +1215,7 @@ class AddChat(Protocol):
 class GetFile(Protocol):
     def connectionMade(self):
         print('Get file connected')
+        # log.startLogging(open(r'C:\Users\millioner\PycharmProjects\Chat\foo2.log', 'w'))
     def dataReceived(self, data):
         global name
         global information_file
@@ -1221,6 +1227,7 @@ class GetFile(Protocol):
         except builtins.UnicodeDecodeError:
             len_data = int(len(data))
             sum_data += len_data
+            self.f = open(r'D:/Python/Files/%s' % information_file['filename'], 'ab')
             self.GetFile(file_data=data)
         else:
             if get_data_in_dict6['set'] == 'Hello from server':
@@ -1244,24 +1251,26 @@ class GetFile(Protocol):
                 login = ''.join(name[0])
                 request_on_transport_file['dir'] = login
                 request_on_transport_file_string = json.dumps(request_on_transport_file)
-                self.f = open(r'D:/Python/Files/%s' % information_file['filename'], 'wb')
+                print('file make')
                 self.transport.write(request_on_transport_file_string.encode('utf-8'))
     def GetFile(self, file_data):
         global sum_data
+        global Add_widget
+        print('Get in Getfile')
         print(information_file['size'])
         print(sum_data)
         if sum_data == information_file['size']:
-            # os.stat("D:/Python/Files/%s" % (information_file['filename'])).st_size
+        #     # os.stat("D:/Python/Files/%s" % (information_file['filename'])).st_size
             self.f.write(file_data)
             sum_data = 0
-            request = {}
-            request['set'] = 'OK'
-            request['dir'] = ''.join(name[0])
-            request_in_string = json.dumps(request)
-            request_in_format_utf = request_in_string.encode('utf-8')
-            Add_widget = True
-            self.transport.write(request_in_format_utf)
+            # Add_widget = True
             self.transport.loseConnection()
+        #     request = {}
+        #     request['set'] = 'OK'
+        #     request['dir'] = ''.join(name[0])
+        #     request_in_string = json.dumps(request)
+        #     request_in_format_utf = request_in_string.encode('utf-8')
+        #     self.transport.write(request_in_format_utf)
         else:
             self.f.write(file_data)
     def connectionLost(self, reason):
