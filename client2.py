@@ -15,9 +15,6 @@ from twisted.internet import task, protocol
 from twisted.protocols.basic import FileSender
 from twisted import protocols
 from twisted.internet.protocol import ClientFactory, Protocol
-from change_data2 import change_status
-from change_data4 import change_status2
-from change_data5 import change_status6
 from twisted.protocols.policies import TimeoutMixin
 from twisted.internet.interfaces import IConsumer
 from twisted.python import log
@@ -37,10 +34,6 @@ send_messege = {}
 file_extension = []
 file_size = []
 sum_data = 0
-sender = []
-customer = str()
-add_mess = False
-list_mess = []
 # size = 60000
 registered = False
 showclient = False
@@ -837,15 +830,11 @@ class Ui_MainWindow2(object):
        # self.label_11.setObjectName("label_11")
        # self.label_11.setText('HIIIIIIIIIIIIIII')
        # myQListWidgetItem = QtWidgets.QListWidgetItem()
-       newButton = QtWidgets.QPushButton()
-       listWidgetItem = QtWidgets.QListWidgetItem()
-       listWidgetItem.setSizeHint(newButton.sizeHint())
-       self.listWidget_3.setStyleSheet("QPushButton{"
+       self.listWidget_3.setStyleSheet("QListWidget::item{"
                                        "background-color:green;"
-                                       "width:100px;"
+                                       "width:10px;"
                                        "}")
-       self.listWidget_3.addItem(listWidgetItem)
-       self.listWidget_3.setItemWidget(listWidgetItem, newButton)
+       self.listWidget_3.addItem("мсмсмє")
        # self.listWidget_3.setItemWidget(myQListWidgetItem, widgetButton)
    def open_windows_explorer(self):
         global transport_file
@@ -944,11 +933,6 @@ class Ui_MainWindow2(object):
        transport_message = True
        reactor.connectTCP('localhost', port, ClientChatFactory5())
    def open_chat(self):
-       global sender
-       global name
-       global get_mess
-       get_mess = True
-       self.listWidget_3.clear()
        self.label.show()
        self.label_2.show()
        self.listWidget_3.show()
@@ -967,10 +951,6 @@ class Ui_MainWindow2(object):
        self.label_10.hide()
        self.word1 = self.listWidget_2.currentItem()
        self.label_3.setText(self.word1.text())
-       count = self.listWidget_2.count()
-       sender.clear()
-       sender.append(self.word1.text())
-       reactor.connectTCP('localhost', port, ClientChatFactory8())
    def show_wid(self):
         if self.pushButton_3.isChecked():
             self.widget_2.show()
@@ -1012,12 +992,6 @@ class Ui_MainWindow2(object):
         self.label_7.setText(_translate("MainWindow", "Write messages your friends.No limits!!"))
         self.label_8.setText(_translate("MainWindow", "     First you can try:"))
         self.label_10.setText(_translate("MainWindow", "Free calling"))
-   def closeEvent(self,event):
-       if self.myclose:
-           print("Закрылось")
-       else:
-           event.ignore()
-           print("Не закрывается")
 class Auth(Protocol):
         def __init__(self):
             self.ui1 = Ui_MainWindow()
@@ -1108,9 +1082,6 @@ class GetMessages(Protocol):
         global write
         global get_mess
         global Add_widget
-        global  add_mess
-        global  list_mess
-        global sender
         get_data3 = data.decode('utf-8')
         get_data_in_dict3 = json.loads(get_data3)
         request = {}
@@ -1129,56 +1100,20 @@ class GetMessages(Protocol):
         elif showclient == True:
                 showclient = False
                 self.add_user2()
-        elif get_data_in_dict3['set'] == 'GET':
-                    del get_data_in_dict3['set']
-                    for key,value in get_data_in_dict3.items():
-                        message = ''.join(value)
-                        sender1 = ''.join(sender)
-                        nick = (message[0:+message.find(":")])
-                        if nick == sender1:
-                            # self.count = self.ui2.listWidget_2.count()
-                            # if self.count > 0:
-                            #     pass
-                            # else:
-                                self.add_mess(message)
-                        else:
-                            self.find = self.ui2.listWidget_2.findItems(nick, PyQt5.QtCore.Qt.MatchContains)
-                            if len(self.find) > 0:
-                                pass
-                            else:
-                                self.ui2.listWidget_2.addItem(nick)
-                                self.ui2.listWidget_2.clicked.connect(self.ui2.open_chat)
-        elif add_mess == True:
-            add_mess = False
-            count = 0
-            lenght = len(list_mess)
-            for message in list_mess:
-                count += 1
-                myQListWidgetItem = QtWidgets.QListWidgetItem(message)
-                self.ui2.listWidget_3.setStyleSheet("QListWidget::item{\n" 
-                                                    "border:0;"
-                                                    "width:0px;"
-                                                    "}"
-                                                    "QListWidget::item:selected{\n"
-                                                    "color:black;"
-                                                    "border: 0;"
-                                                    "width:0px;"
-                                                    "}"
-                                                    )
-                self.ui2.listWidget_3.setFocusPolicy(QtCore.Qt.NoFocus)
-                self.ui2.listWidget_3.addItem(myQListWidgetItem)
-                if lenght == count:
-                        print('зашло')
-                        list_mess.clear()
-                        break
         elif write == True:
                 write = False
                 self.bring_messege2()
         elif Add_widget == True:
             Add_widget = False
-            self.ui2.show_file_in_chat2()
+            self.show_file_in_chat()
         elif get_data_in_dict3['set'] == 'no mesg':
                     pass
+        elif get_data_in_dict3['set'] == 'GET':
+                    del get_data_in_dict3['set']
+                    for key,value in get_data_in_dict3.items():
+                        get_mess = True
+                        message = ''.join(value)
+                        self.add_mess(message)
     def add_mess(self, message):
         myQListWidgetItem = QtWidgets.QListWidgetItem(message)
         self.ui2.listWidget_3.setStyleSheet("QListWidget::item{\n"
@@ -1214,8 +1149,8 @@ class GetMessages(Protocol):
         self.ui2.listWidget_3.setFocusPolicy(QtCore.Qt.NoFocus)
         self.ui2.listWidget_3.addItem(myQListWidgetItem)
         self.ui2.textEdit.clear()
-    # def show_file_in_chat(self):
-    #     self.ui2.show_file_in_chat2()
+    def show_file_in_chat(self):
+        self.ui2.show_file_in_chat2()
     def connectionLost(self, reason):
         print('disconected')
 class SentMessages(Protocol):
@@ -1276,18 +1211,21 @@ class AddChat(Protocol):
 class GetFile(Protocol):
     def connectionMade(self):
         print('Get file connected')
+        # log.startLogging(open(r'C:\Users\millioner\PycharmProjects\Chat\foo3.log', 'w'))
     def dataReceived(self, data):
         global name
         global information_file
         global sum_data
         global Add_widget
         try:
+            print('print try')
             get_data6 = data.decode('utf-8')
             get_data_in_dict6 = json.loads(get_data6)
         except builtins.UnicodeDecodeError:
+            print("print except")
+            self.f = open(r'D:/Python/Files/%s' % information_file['filename'], 'ab')
             len_data = int(len(data))
             sum_data += len_data
-            self.f = open(r'D:/Python/Files/%s' % information_file['filename'], 'ab')
             self.GetFile(file_data=data)
         else:
             if get_data_in_dict6['set'] == 'Hello from server':
@@ -1315,15 +1253,21 @@ class GetFile(Protocol):
                 self.transport.write(request_on_transport_file_string.encode('utf-8'))
     def GetFile(self, file_data):
         global sum_data
-        global Add_widget
         print('Get in Getfile')
         print(information_file['size'])
         print(sum_data)
         if sum_data == information_file['size']:
+            # os.stat("D:/Python/Files/%s" % (information_file['filename'])).st_size
             self.f.write(file_data)
             sum_data = 0
-            # Add_widget = True
-            self.transport.loseConnection()
+            request = {}
+            request['set'] = 'OK'
+            request['dir'] = ''.join(name[0])
+            request_in_string = json.dumps(request)
+            request_in_format_utf = request_in_string.encode('utf-8')
+            Add_widget = True
+            self.transport.write(request_in_format_utf)
+            # self.transport.loseConnection()
         else:
             self.f.write(file_data)
     def connectionLost(self, reason):
@@ -1448,70 +1392,65 @@ class SentFile(Protocol):
                         self.transport.write(data_file_format_utf2)
                         file.clear()
                         bring_user.clear()
+    # def show_file_in_chat(self):
+    #     global name
+    #     global bring_user
+    #     global write
+    #     global send_messege
+    #     global transport_message
+    #     global transport_file
+    #     global file
+    #     global fullfilename
+    #     global file_extension
+    #     my_login = ''.join(name[0])
+    #     relative_file_path = ''.join(file)
+    #     # self.ui2.frame = QtWidgets.QFrame()
+    #     # self.ui2.pushButton_20 = QtWidgets.QPushButton()
+    #     # # self.ui2.pushButton_20.setGeometry(QtCore.QRect(0, 0, 61, 61))
+    #     # self.ui2.pushButton_20.setStyleSheet("QPushButton{\n"
+    #     #                                      "background-color:white;\n"
+    #     #                                      "border:0px;\n"
+    #     #                                      "\n"
+    #     #                                      "\n"
+    #     #                                      "\n"
+    #     #                                      "\n"
+    #     #                                      "}")
+    #     # icon = QtGui.QIcon()
+    #     # icon.addPixmap(QtGui.QPixmap("C:/Users/millioner/PycharmProjects/Chat/open_file2.png"), QtGui.QIcon.Normal,
+    #     #                QtGui.QIcon.Off)
+    #     # self.ui2.pushButton_20.setIcon(icon)
+    #     # self.ui2.pushButton_20.setIconSize(QtCore.QSize(40, 50))
+    #     # self.ui2.pushButton_20.setObjectName("pushButton_20")
+    #     # # self.ui2.frame.setGeometry(QtCore.QRect(130, 120, 121, 61))
+    #     # myQListWidgetItem.setSizeHint(QtCore.QSize(0,61))
+    #     # myQListWidgetItem.setStyleSheet("QFrame{\n"
+    #     #                          "background-color:black;\n"
+    #     #                          "\n"
+    #     #                          "\n"
+    #     #                          "\n"
+    #     #                          "\n"
+    #     #                          "}")
+    #     # myQListWidgetItem.setFrameShape(QtWidgets.QFrame.StyledPanel)
+    #     # myQListWidgetItem.setFrameShadow(QtWidgets.QFrame.Raised)
+    #     # myQListWidgetItem.setObjectName("frame")
+    #     # self.ui2.label_12 = QtWidgets.QLabel(myQListWidgetItem)
+    #     # self.ui2.label_12.setGeometry(QtCore.QRect(74, 5, 31, 16))
+    #     # self.ui2.label_12.setAlignment(QtCore.Qt.AlignCenter)
+    #     # self.ui2.label_12.setObjectName("label_2")
+    #     # self.ui2.label_11.setText(relative_file_path)
+    #     # self.ui2.label_12.setText(my_login)
+    #     # widgetButton = QtWidgets.QPushButton("Push Me")
+    #     # myQListWidgetItem = QtWidgets.QListWidgetItem()
+    #     # myQListWidgetItem.setSizeHint(QtCore.QSize(0,61))
+    #     # self.ui2.listWidget_3.addItem(myQListWidgetItem)
+    #     # self.ui2.listWidget_3.setItemWidget(myQListWidgetItem,widgetButton)
+    #     # fullfilename.clear()
+    #     # file.clear()
+    #     # bring_user.clear()
+    #     # file_extension.clear()
+    #     # transport_file = False
     def connectionLost(self, reason):
         print('disconected')
-class Synchronization_Of_Messages(Protocol):
-    def connectionMade(self):
-        print('Synchronization connected')
-    def dataReceived(self, data):
-        global name
-        global sender
-        global add_mess
-        global list_mess
-        global  name
-        global  get_mess
-        get_data5 = data.decode('utf-8')
-        get_data_in_dict5 = json.loads(get_data5)
-        login = ''.join(name[0])
-        sender2 = ''.join(sender[0])
-        request = {}
-        request['set'] = 'GET'
-        request['login'] = login
-        request['sender'] = sender2
-        data_file_string2 = json.dumps(request)
-        data_file_format_utf2 = data_file_string2.encode('utf-8')
-        self.transport.write(data_file_format_utf2)
-        if get_data_in_dict5['set'] == 'no mess':
-            print('no messages')
-        elif get_data_in_dict5['set'] == 'receive':
-            del get_data_in_dict5['set']
-            count = 0
-            for key, value in get_data_in_dict5.items():
-                count +=1
-                print(get_data_in_dict5)
-                message = ''.join(value)
-                add_mess = True
-                if get_mess == True:
-                    list_mess.append(message)
-                if len(get_data_in_dict5) == count:
-                    get_mess = False
-                    break
-    def connectionLost(self, reason):
-            print('disconected')
-# class Change_Status(Protocol):
-#     def connectionMade(self):
-#         print('Change_Status connected')
-#     def dataReceived(self, data):
-#         global name
-#         global sender
-#         global add_mess
-#         global list_mess
-#         global name
-#         global  customer
-#         get_data5 = data.decode('utf-8')
-#         get_data_in_dict5 = json.loads(get_data5)
-#         login = ''.join(name[0])
-#         sender2 = ''.join(sender[0])
-#         request = {}
-#         request['set'] = 'Change status'
-#         request['login'] = login
-#         request['sender'] = sender2
-#         self.transport.write(json.dumps(request).encode('utf-8'))
-#         if get_data_in_dict5['set'] =='Change':
-#
-#             reactor.connectTCP('localhost', port, ClientChatFactory8())
-#     def connectionLost(self, reason):
-#             print('disconected')
 class ClientChatFactory(ClientFactory):
         def startedConnecting(self, connector):
             print('connect..')
@@ -1575,38 +1514,9 @@ class ClientChatFactory7(ClientFactory):
             print('ConnectionFailed, reason:', reason)
     def clientConnectionLost(self, connector, reason):
             print('ConnectionLost, reason:', reason)
-class ClientChatFactory8(ClientFactory):
-    def startedConnecting(self, connector):
-            print('connect..')
-    def buildProtocol(self, addr):
-            return Synchronization_Of_Messages()
-    def clientConnectionFailed(self, connector, reason):
-            print('ConnectionFailed, reason:', reason)
-    def clientConnectionLost(self, connector, reason):
-            # global name
-            # login = ''.join(name[0])
-            # status = True
-            # change_status(status, login)
-            print('ConnectionLost, reason:', reason)
-# class ClientChatFactory9(ClientFactory):
-#     def startedConnecting(self, connector):
-#             print('connect..')
-#     def buildProtocol(self, addr):
-#             return Change_Status()
-#     def clientConnectionFailed(self, connector, reason):
-#             print('ConnectionFailed, reason:', reason)
-#     def clientConnectionLost(self, connector, reason):
-#             print('ConnectionLost, reason:', reason)
-def appExec():
-    app = QApplication(sys.argv)
-    # and so on until we reach:
-    app.exec_()
-    print("my message...")
-    # other work...
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
-    import sys
     import qt5reactor
     qt5reactor.install()
     from twisted.internet import reactor
@@ -1614,6 +1524,8 @@ if __name__ == "__main__":
     ui.setupUi(MainWindow)
     MainWindow.show()
     reactor.run()
+
+
 
 
 

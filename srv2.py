@@ -7,10 +7,15 @@ from twisted.internet.protocol import Factory, Protocol
 from write_data import insert_user
 from check_data import query_with_fetchone1
 from write_data2 import insert_message
+from write_data3 import insert_message4
+from write_data4 import insert_message5
 from Check_data2 import query_with_fetchone
 from delete_data import delete_message
 from find_friends import find_friend
 from Check_data3 import query_with_fetchall
+from return_message import get_message
+from change_data2 import change_status
+from change_data3 import change_status3
 from mysql.connector import MySQLConnection, Error
 from python_mysql_dbconfig import read_db_config
 from twisted.protocols.policies import TimeoutMixin
@@ -68,9 +73,12 @@ class Chat(Protocol, TimeoutMixin):
                 self.transport.write(json.dumps(auth).encode('utf-8'))
             elif get_data_in_dict['set'] == 'write message':
                 del get_data_in_dict['set']
-                message = "{}:{}".format(get_data_in_dict['sender'], get_data_in_dict['message'])
+                message = "{}".format(get_data_in_dict['message'])
+                message2 = "{}:{}".format(get_data_in_dict['sender'], get_data_in_dict['message'])
                 c = get_data_in_dict['receipient']
-                insert_message(c, message)
+                insert_message(c, message2)
+                insert_message5(get_data_in_dict['sender'], c, message, status=False)
+                insert_message4(c,get_data_in_dict['sender'],message2,status=True)
                 bring = {}
                 bring['set'] = 'bring'
                 self.transport.write(json.dumps(bring).encode('utf-8'))
@@ -85,6 +93,29 @@ class Chat(Protocol, TimeoutMixin):
                     self.transport.write(json.dumps(no_mesg).encode('utf-8'))
                 else:
                     self.transport.write(json.dumps(request_message).encode('utf-8'))
+            elif get_data_in_dict['set'] == 'GET':
+                del get_data_in_dict['set']
+                login = get_data_in_dict['login']
+                sender = get_data_in_dict['sender']
+                change_status3(status=True,login=login,sender=sender)
+                result = get_message(login,sender)
+                status = False
+                if result == False:
+                    no_mesg = {}
+                    no_mesg['set'] = 'no mess'
+                    self.transport.write(json.dumps(no_mesg).encode('utf-8'))
+                else:
+                    change_status_message = change_status(status, sender)
+                    self.transport.write(json.dumps(result).encode('utf-8'))
+                    self.transport.loseConnection()
+            # elif get_data_in_dict['set'] == 'Change status':
+            #      del get_data_in_dict['set']
+            #      login = get_data_in_dict['login']
+            #      sender = get_data_in_dict['sender']
+            #
+            #      response = {}
+            #      response['set'] = 'Change'
+            #      self.transport.write(json.dumps(response).encode('utf-8'))
             elif get_data_in_dict['set'] == 'find friend':
                 answer = {}
                 answer2 = {}

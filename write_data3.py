@@ -1,8 +1,8 @@
 from python_mysql_dbconfig import read_db_config
 from mysql.connector import MySQLConnection, Error
-query = "INSERT INTO messages(login,message)""VALUES(%s,%s)"
-def insert_message(login,message):
-    args = (login,message)
+query = "INSERT INTO backupmessage(login,sender,message,status)""VALUES(%s,%s,%s,%s)"
+def insert_message4(login,sender,message,status):
+    args = (login, sender,message,status)
     try:
         db_config = read_db_config()
         conn = MySQLConnection(**db_config)
@@ -22,4 +22,3 @@ def insert_message(login,message):
     finally:
         cursor.close()
         conn.close()
-
