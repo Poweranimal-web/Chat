@@ -11,22 +11,30 @@ import os
 import sys
 import time
 import json
+import gzip
 from twisted.internet import task, protocol
 from twisted.protocols.basic import FileSender
 from twisted import protocols
 from twisted.internet.protocol import ClientFactory, Protocol
-from change_data2 import change_status
-from change_data4 import change_status2
-from change_data5 import change_status6
 from twisted.protocols.policies import TimeoutMixin
 from twisted.internet.interfaces import IConsumer
 from twisted.python import log
 import PyQt5
-from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import *
-from emoji import emojize
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtGui import QKeySequence, QFontMetrics
+from PyQt5.QtCore import Qt
+from PyQt5 import QtCore, QtGui, QtWidgets, Qt
+from PyQt5.QtWidgets import *
 import easygui
-port = 9090
+import pyglet
+import textwrap
+import enchant
+import re
+port = 6002
+host = '46.4.105.30'
+# host = 'localhost'
 information_file = {}
 file = []
 fullfilename = []
@@ -37,6 +45,7 @@ send_messege = {}
 file_extension = []
 file_size = []
 sum_data = 0
+sum_data2 = 0
 sender = []
 customer = str()
 add_mess = False
@@ -157,11 +166,16 @@ class Ui_MainWindow1(object):
             self.retranslateUi(MainWindow)
             QtCore.QMetaObject.connectSlotsByName(MainWindow)
             self.pushButton.setCheckable(True)
+            self.pushButton_4.setCheckable(True)
+            self.pushButton_5.setCheckable(True)
             self.pushButton.toggle()
             self.pushButton.clicked.connect(self.check)
             self.pushButton_3.clicked.connect(self.conn)
+            self.pushButton_4.clicked.connect(self.setMode2)
+            self.pushButton_5.clicked.connect(self.setMode)
             self.lineEdit.setPlaceholderText('Enter your login:')
             self.lineEdit_2.setPlaceholderText('Enter your password:')
+            self.lineEdit_2.setEchoMode(QtWidgets.QLineEdit.Password)
         def retranslateUi(self, MainWindow):
             _translate = QtCore.QCoreApplication.translate
             MainWindow.setWindowTitle(_translate("MainWindow", "Gusmes"))
@@ -174,7 +188,17 @@ class Ui_MainWindow1(object):
             password = self.lineEdit_2.text()
             inf['login'] = login
             inf['password'] = password
-            reactor.connectTCP('localhost', port,ClientChatFactory())
+            reactor.connectTCP(host, port,ClientChatFactory())
+        def setMode(self):
+            if self.pushButton_5.isChecked():
+                self.lineEdit_2.setEchoMode(QtWidgets.QLineEdit.Normal)
+            else:
+                self.lineEdit_2.setEchoMode(QtWidgets.QLineEdit.Password)
+        def setMode2(self):
+            if self.pushButton_4.isChecked():
+                self.lineEdit.setEchoMode(QtWidgets.QLineEdit.Password)
+            else:
+                self.lineEdit.setEchoMode(QtWidgets.QLineEdit.Normal)
 class Ui_MainWindow(object):
         def conn(self):
             self.ui = Ui_MainWindow1()
@@ -307,16 +331,23 @@ class Ui_MainWindow(object):
             self.pushButton_6.setIcon(icon)
             self.pushButton_6.setObjectName("pushButton_6")
             MainWindow.setCentralWidget(self.centralwidget)
-
             self.retranslateUi(MainWindow)
             QtCore.QMetaObject.connectSlotsByName(MainWindow)
             self.pushButton.clicked.connect(self.conn)
             self.lineEdit.setPlaceholderText('Enter your login:')
             self.lineEdit_2.setPlaceholderText('Enter your password:')
             self.lineEdit_3.setPlaceholderText('Repeat your password:')
+            self.lineEdit_2.setEchoMode(QtWidgets.QLineEdit.Password)
+            self.lineEdit_3.setEchoMode(QtWidgets.QLineEdit.Password)
             self.pushButton_3.setCheckable(True)
+            self.pushButton_5.setCheckable(True)
+            self.pushButton_6.setCheckable(True)
+            self.pushButton_4.setCheckable(True)
             self.pushButton_3.toggle()
             self.pushButton_3.clicked.connect(self.check)
+            self.pushButton_5.clicked.connect(self.setMode)
+            self.pushButton_6.clicked.connect(self.setMode2)
+            self.pushButton_4.clicked.connect(self.setMode3)
         def retranslateUi(self, MainWindow):
             _translate = QtCore.QCoreApplication.translate
             MainWindow.setWindowTitle(_translate("MainWindow", "Gusmes"))
@@ -324,6 +355,21 @@ class Ui_MainWindow(object):
             self.pushButton_2.setText(_translate("MainWindow", "New account"))
             self.checkBox.setText(_translate("MainWindow", "Private Police"))
             self.pushButton_3.setText(_translate("MainWindow", "login"))
+        def setMode(self):
+            if self.pushButton_5.isChecked():
+                self.lineEdit_2.setEchoMode(QtWidgets.QLineEdit.Normal)
+            else:
+                self.lineEdit_2.setEchoMode(QtWidgets.QLineEdit.Password)
+        def setMode2(self):
+            if self.pushButton_6.isChecked():
+                self.lineEdit_3.setEchoMode(QtWidgets.QLineEdit.Normal)
+            else:
+                self.lineEdit_3.setEchoMode(QtWidgets.QLineEdit.Password)
+        def setMode3(self):
+            if self.pushButton_4.isChecked():
+                self.lineEdit.setEchoMode(QtWidgets.QLineEdit.Password)
+            else:
+                self.lineEdit.setEchoMode(QtWidgets.QLineEdit.Normal)
         def check(self):
                 login = self.lineEdit.text()
                 password = self.lineEdit_2.text()
@@ -332,7 +378,7 @@ class Ui_MainWindow(object):
                 inf['password'] = password
                 inf['repeat_password'] = repeat_password
                 if password == repeat_password:
-                    reactor.connectTCP('localhost', port, ClientChatFactory2())
+                    reactor.connectTCP(host, port, ClientChatFactory2())
                 else:
                     self.lineEdit_2.setStyleSheet("QLineEdit{"
                                                   "background-color: rgb(255, 0, 0);"
@@ -340,7 +386,77 @@ class Ui_MainWindow(object):
                     self.lineEdit_3.setStyleSheet("QLineEdit{"
                                                   "background-color: rgb(255, 0, 0);"
                                                   "}")
+class Ui_MainWindow3(object):
+    def setupUi(self, MainWindow):
+        MainWindow.setObjectName("MainWindow")
+        MainWindow.resize(467, 433)
+        MainWindow.setStyleSheet("background-color:white;")
+        self.centralwidget = QtWidgets.QWidget(MainWindow)
+        self.centralwidget.setObjectName("centralwidget")
+        self.pushButton_4 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_4.setGeometry(QtCore.QRect(160, 60, 171, 171))
+        self.pushButton_4.setStyleSheet("QPushButton{\n"
+"border-bottom-left-radius:80%;\n"
+"border-top-left-radius:80%;\n"
+"border-bottom-right-radius:80%;\n"
+"border-top-right-radius:80%;\n"
+"background-color: rgb(232,232,232);\n"
+"}")
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("D:/Python/user (1).png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.pushButton_4.setIcon(icon)
+        self.pushButton_4.setIconSize(QtCore.QSize(191, 171))
+        self.pushButton_4.setObjectName("pushButton_4")
+        self.pushButton = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton.setGeometry(QtCore.QRect(130, 256, 61, 61))
+        self.pushButton.setStyleSheet("QPushButton{\n"
+"border-bottom-left-radius:30%;\n"
+"border-top-left-radius:30%;\n"
+"border-bottom-right-radius:30%;\n"
+"border-top-right-radius:30%;\n"
+"background-color: red;\n"
+"}")
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap("refuse.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.pushButton.setIcon(icon1)
+        self.pushButton.setIconSize(QtCore.QSize(32, 32))
+        self.pushButton.setObjectName("pushButton")
+        self.pushButton_2 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_2.setGeometry(QtCore.QRect(211, 256, 61, 61))
+        self.pushButton_2.setStyleSheet("QPushButton{\n"
+"border-bottom-left-radius:30%;\n"
+"border-top-left-radius:30%;\n"
+"border-bottom-right-radius:30%;\n"
+"border-top-right-radius:30%;\n"
+"background-color: black;\n"
+"}")
+        icon2 = QtGui.QIcon()
+        icon2.addPixmap(QtGui.QPixmap("D:/Python/video-camera.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.pushButton_2.setIcon(icon2)
+        self.pushButton_2.setIconSize(QtCore.QSize(50, 50))
+        self.pushButton_2.setObjectName("pushButton_2")
+        self.pushButton_3 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_3.setGeometry(QtCore.QRect(293, 256, 61, 61))
+        self.pushButton_3.setStyleSheet("QPushButton{\n"
+"border-bottom-left-radius:30%;\n"
+"border-top-left-radius:30%;\n"
+"border-bottom-right-radius:30%;\n"
+"border-top-right-radius:30%;\n"
+"background-color: rgb(0, 255, 0);\n"
+"}")
+        icon3 = QtGui.QIcon()
+        icon3.addPixmap(QtGui.QPixmap("D:/Python/accept.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.pushButton_3.setIcon(icon3)
+        self.pushButton_3.setIconSize(QtCore.QSize(32, 32))
+        self.pushButton_3.setObjectName("pushButton_3")
+        MainWindow.setCentralWidget(self.centralwidget)
 
+        self.retranslateUi(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+    def retranslateUi(self, MainWindow):
+        _translate = QtCore.QCoreApplication.translate
+        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
 class InputBox(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super(InputBox, self).__init__(parent)
@@ -360,6 +476,22 @@ class InputBox(QtWidgets.QDialog):
     def save(self):
         value = self.txt.text()
         return value
+# class Window(QMainWindow):
+#     # Snip...
+#     def _createActions(self):
+        # Creating action using the first constructor
+        # self.newAction = QAction(self)
+        # self.newAction.setText("&amp;New")
+        # Creating actions using the second constructor
+        # self.openAction = QAction("&amp;Open...", self)
+        # self.saveAction = QAction("&amp;Save", self)
+        # self.exitAction = QAction("&amp;Exit", self)
+        # self.copyAction = QAction("&amp;Copy", self)
+        # self.pasteAction = QAction("&amp;Paste", self)
+        # self.cutAction = QAction("C&amp;ut", self)
+        # self.helpContentAction = QAction("&amp;Help Content", self)
+        # self.aboutAction = QAction("&amp;About", self)
+        # self.deleteAction = QAction("&amp;Delete", self)
 class Ui_MainWindow2(object):
    def setupUi(self, MainWindow):
             MainWindow.setObjectName("MainWindow")
@@ -572,6 +704,35 @@ class Ui_MainWindow2(object):
             # self.plainTextEdit.setObjectName("plainTextEdit")
             self.listWidget_3 = QtWidgets.QListWidget(self.centralwidget)
             self.listWidget_3.setGeometry(QtCore.QRect(220, 80, 658, 421))
+            self.scroll_bar = QScrollBar()
+            self.scroll_bar.setStyleSheet("""
+               QScrollBar:vertical {
+                border: none;
+                background: white;
+                width: 10px;
+                margin: 15px 0 15px 0;
+                border-radius: 0px;
+            }
+            /*  HANDLE BAR VERTICAL */
+            QScrollBar::handle:vertical {
+                background-color: silver;
+                min-height: 40px;
+                border-radius: 7px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background-color:rgb(179, 179, 179);
+            }
+            QScrollBar::handle:vertical:pressed {
+                background-color:rgb(179, 179, 179);
+            }
+            QScrollBar::add-line:horizontal {
+            width:0px;
+            }
+            QScrollBar::sub-line:horizontal {
+            width:0px;
+            }
+            """)
+            self.listWidget_3.setVerticalScrollBar(self.scroll_bar)
             self.listWidget_3.setObjectName("listWidget_3")
             self.widget_2 = QtWidgets.QWidget(self.centralwidget)
             self.widget_2.setGeometry(QtCore.QRect(751, -1, 130, 551))
@@ -664,6 +825,7 @@ class Ui_MainWindow2(object):
             icon = QtGui.QIcon()
             icon.addPixmap(
                 QtGui.QPixmap("C:/Users/millioner/PycharmProjects/Chat/743191-smileys/png/001-suspicious-1.png"),
+                # QtGui.QPixmap("001-suspicious-1.png")
                 QtGui.QIcon.Normal, QtGui.QIcon.Off)
             self.pushButton_12.setIcon(icon)
             self.pushButton_12.setIconSize(QtCore.QSize(30, 30))
@@ -682,6 +844,7 @@ class Ui_MainWindow2(object):
             icon1 = QtGui.QIcon()
             icon1.addPixmap(
                 QtGui.QPixmap("C:/Users/millioner/PycharmProjects/Chat/743191-smileys/png/006-happy-14.png"),
+                # QtGui.QPixmap("006-happy-14.png"),
                 QtGui.QIcon.Normal, QtGui.QIcon.Off)
             self.pushButton_13.setIcon(icon1)
             self.pushButton_13.setIconSize(QtCore.QSize(30, 30))
@@ -700,6 +863,7 @@ class Ui_MainWindow2(object):
             icon2 = QtGui.QIcon()
             icon2.addPixmap(
                 QtGui.QPixmap("C:/Users/millioner/PycharmProjects/Chat/743191-smileys/png/022-laughing-2.png"),
+                # QtGui.QPixmap("022-laughing-2.png"),
                 QtGui.QIcon.Normal, QtGui.QIcon.Off)
             self.pushButton_14.setIcon(icon2)
             self.pushButton_14.setIconSize(QtCore.QSize(30, 30))
@@ -718,6 +882,7 @@ class Ui_MainWindow2(object):
             icon3 = QtGui.QIcon()
             icon3.addPixmap(
                 QtGui.QPixmap("C:/Users/millioner/PycharmProjects/Chat/743191-smileys/png/005-sweating.png"),
+                # QtGui.QPixmap("005-sweating.png"),
                 QtGui.QIcon.Normal, QtGui.QIcon.Off)
             self.pushButton_15.setIcon(icon3)
             self.pushButton_15.setIconSize(QtCore.QSize(30, 30))
@@ -736,6 +901,7 @@ class Ui_MainWindow2(object):
             icon4 = QtGui.QIcon()
             icon4.addPixmap(
                 QtGui.QPixmap("C:/Users/millioner/PycharmProjects/Chat/743191-smileys/png/058-crying-1.png"),
+                # QtGui.QPixmap("058-crying-1.png"),
                 QtGui.QIcon.Normal, QtGui.QIcon.Off)
             self.pushButton_16.setIcon(icon4)
             self.pushButton_16.setIconSize(QtCore.QSize(30, 30))
@@ -753,6 +919,7 @@ class Ui_MainWindow2(object):
                                             "}")
             icon5 = QtGui.QIcon()
             icon5.addPixmap(QtGui.QPixmap("C:/Users/millioner/PycharmProjects/Chat/743191-smileys/png/020-cool-1.png"),
+            # icon5.addPixmap(QtGui.QPixmap("020-cool-1.png"),
                             QtGui.QIcon.Normal, QtGui.QIcon.Off)
             self.pushButton_17.setIcon(icon5)
             self.pushButton_17.setIconSize(QtCore.QSize(30, 30))
@@ -770,6 +937,7 @@ class Ui_MainWindow2(object):
                                             "}")
             icon6 = QtGui.QIcon()
             icon6.addPixmap(QtGui.QPixmap("C:/Users/millioner/PycharmProjects/Chat/743191-smileys/png/032-dead-2.png"),
+            # icon6.addPixmap(QtGui.QPixmap("032-dead-2.png"),
                             QtGui.QIcon.Normal, QtGui.QIcon.Off)
             self.pushButton_18.setIcon(icon6)
             self.pushButton_18.setIconSize(QtCore.QSize(30, 30))
@@ -787,6 +955,7 @@ class Ui_MainWindow2(object):
                                             "}")
             icon7 = QtGui.QIcon()
             icon7.addPixmap(QtGui.QPixmap("C:/Users/millioner/PycharmProjects/Chat/743191-smileys/png/027-sad-6.png"),
+            # icon7.addPixmap(QtGui.QPixmap("027-sad-6.png"),
                             QtGui.QIcon.Normal, QtGui.QIcon.Off)
             self.pushButton_19.setIcon(icon7)
             self.pushButton_19.setIconSize(QtCore.QSize(30, 30))
@@ -808,6 +977,14 @@ class Ui_MainWindow2(object):
             self.pushButton_18.clicked.connect(self.smile7)
             self.pushButton_19.clicked.connect(self.smile8)
             self.pushButton_8.clicked.connect(self.open_windows_explorer)
+            self.listWidget_3.setContextMenuPolicy(PyQt5.QtCore.Qt.ActionsContextMenu)
+            self.pushButton_5.clicked.connect(self.call)
+            self.pushButton_6.clicked.connect(self.add_friend)
+            self.listWidget_3.setWordWrap(True)
+            # self.newAction = QAction()
+            # self.newAction.setText("&amp;New")
+            # self.deleteAction = QAction("Delete")
+            # self.listWidget_3.itemClicked.addAction(self.deleteAction)
             self.emoji.hide()
             self.widget_2.hide()
             self.label.hide()
@@ -819,7 +996,55 @@ class Ui_MainWindow2(object):
             self.pushButton_10.hide()
             self.pushButton_9.hide()
             self.pushButton_8.hide()
-   # and a < size
+   def add_friend(self):
+       word = self.listWidget_2.currentItem().text()
+       self.find2 = self.listWidget.findItems(word, PyQt5.QtCore.Qt.MatchContains)
+       if len(self.find2) > 0:
+           pass
+       else:
+           self.listWidget.addItem(word)
+   def call(self):
+       ui = Ui_MainWindow3()
+       ui.setupUi(MainWindow)
+       # MainWindow.show()
+   def show_photo_in_chat2(self):
+       global name
+       global bring_user
+       global write
+       global send_messege
+       global transport_message
+       global transport_file
+       global file
+       global fullfilename
+       global file_extension
+       filef = ''.join(fullfilename)
+       ListWidgetItem = QtWidgets.QListWidgetItem()
+       ListWidgetItem.setSizeHint(QtCore.QSize(10, 251))
+       Frame = QtWidgets.QFrame()
+       Frame.setStyleSheet('QFrame{'
+                           'background-color:white;'
+                           '}')
+       label = QtWidgets.QLabel(Frame)
+       label.setGeometry(QtCore.QRect(485,5, 151, 241))
+       pixmap = QtGui.QPixmap(filef)
+       radius = 50
+       rounded = QtGui.QPixmap(pixmap.size())
+       rounded.fill(QtGui.QColor("transparent"))
+       painter = QtGui.QPainter(rounded)
+       painter.setRenderHint(QtGui.QPainter.Antialiasing)
+       painter.setBrush(QtGui.QBrush(pixmap))
+       painter.setPen(QtCore.Qt.NoPen)
+       painter.drawRoundedRect(pixmap.rect(), radius, radius)
+       painter.end()
+       label.setPixmap(rounded)
+       label.setScaledContents(True)
+       self.listWidget_3.addItem(ListWidgetItem)
+       self.listWidget_3.setItemWidget(ListWidgetItem, Frame)
+       fullfilename.clear()
+       file.clear()
+       bring_user.clear()
+       file_extension.clear()
+       transport_file = False
    def show_file_in_chat2(self):
        global name
        global bring_user
@@ -830,23 +1055,62 @@ class Ui_MainWindow2(object):
        global file
        global fullfilename
        global file_extension
-       # widgetButton = QtWidgets.QPushButton()
-       # self.label_11 = QtWidgets.QLabel(widgetButton)
-       # self.label_11.setGeometry(QtCore.QRect(60, 20, 61, 31))
-       # self.label_11.setAlignment(QtCore.Qt.AlignCenter)
-       # self.label_11.setObjectName("label_11")
-       # self.label_11.setText('HIIIIIIIIIIIIIII')
-       # myQListWidgetItem = QtWidgets.QListWidgetItem()
-       newButton = QtWidgets.QPushButton()
-       listWidgetItem = QtWidgets.QListWidgetItem()
-       listWidgetItem.setSizeHint(newButton.sizeHint())
-       self.listWidget_3.setStyleSheet("QPushButton{"
-                                       "background-color:green;"
-                                       "width:100px;"
-                                       "}")
-       self.listWidget_3.addItem(listWidgetItem)
-       self.listWidget_3.setItemWidget(listWidgetItem, newButton)
-       # self.listWidget_3.setItemWidget(myQListWidgetItem, widgetButton)
+       login = ''.join(name[0])
+       filename = ''.join(file)
+       ListWidgetItem = QtWidgets.QListWidgetItem()
+       Frame = QtWidgets.QFrame()
+       Frame.setStyleSheet('QFrame{'
+                           'background-color:white;'
+                           '}')
+       PushButton = QPushButton(Frame)
+       PushButton.setStyleSheet("QPushButton{\n"
+                                "background-color:rgb(139, 250, 255);\n"
+                                "border:0px;\n"
+                                "border-bottom-left-radius:15%;\n"
+                                "border-top-left-radius:15%;\n"
+                                "border-bottom-right-radius:15%;\n"
+                                "border-top-right-radius:15%;\n"
+                                "}")
+       PushButton.setGeometry(QtCore.QRect(485,5,151, 61))
+       ListWidgetItem.setSizeHint(QtCore.QSize(10, 70))
+       PushButton2 = QPushButton(PushButton)
+       icon = QtGui.QIcon()
+       icon.addPixmap(QtGui.QPixmap("C:/Users/millioner/PycharmProjects/Chat/open_file2.png"), QtGui.QIcon.Normal,
+                      QtGui.QIcon.Off)
+       PushButton2.setIcon(icon)
+       PushButton2.setIconSize(QtCore.QSize(40, 50))
+       PushButton2.setStyleSheet("QPushButton{\n"
+                                  "background-color:rgb(139, 250, 255);\n"            
+                                  "border:0px;\n"
+                                  "border-bottom-left-radius:15%;\n"
+                                  "border-top-left-radius:15%;\n"
+                                  "}")
+       PushButton2.setGeometry(QtCore.QRect(0, 0, 61, 61))
+       label2 = QtWidgets.QLabel(PushButton)
+       label2.setGeometry(QtCore.QRect(62, 0, 71, 20))
+       label2.setStyleSheet("QLabel{\n"
+                                  "background-color:rgb(139, 250, 255);\n"  
+                                  "}")
+
+       label2.setText(login)
+       label2.setAlignment(QtCore.Qt.AlignCenter)
+       label = QtWidgets.QLabel(PushButton)
+       label.setGeometry(QtCore.QRect(63, 23, 71, 31))
+       label.setStyleSheet("QLabel{\n"
+                                "background-color:rgb(139, 250, 255);\n"   
+                                "\n"
+                                "}")
+       label.setText(filename)
+       label.setAlignment(QtCore.Qt.AlignCenter)
+       self.listWidget_3.addItem(ListWidgetItem)
+       self.listWidget_3.setItemWidget(ListWidgetItem, Frame)
+       fullfilename.clear()
+       file.clear()
+       bring_user.clear()
+       file_extension.clear()
+       file.clear()
+       bring_user.clear()
+       transport_file = False
    def open_windows_explorer(self):
         global transport_file
         global file
@@ -874,7 +1138,7 @@ class Ui_MainWindow2(object):
             file_extension.append(enlargement)
             file.append(base)
             fullfilename.append(input_file)
-            reactor.connectTCP('localhost', port, ClientChatFactory7())
+            reactor.connectTCP(host, port, ClientChatFactory7())
    def smile1(self):
        self.textEdit.append('\U0001f928')
    def smile2(self):
@@ -923,7 +1187,7 @@ class Ui_MainWindow2(object):
         if input_box.exec_() == QtWidgets.QDialog.Accepted:
             self.val = input_box.save()
             user.append(self.val)
-            reactor.connectTCP('localhost', port, ClientChatFactory4())
+            reactor.connectTCP(host, port, ClientChatFactory4())
    def onClicked(self, item):
             self.word = item.text()
             self.find = self.listWidget_2.findItems(self.word,PyQt5.QtCore.Qt.MatchContains)
@@ -942,7 +1206,7 @@ class Ui_MainWindow2(object):
        message_send = self.textEdit.toPlainText()
        send_messege['messege'] = message_send
        transport_message = True
-       reactor.connectTCP('localhost', port, ClientChatFactory5())
+       reactor.connectTCP(host, port, ClientChatFactory5())
    def open_chat(self):
        global sender
        global name
@@ -970,7 +1234,7 @@ class Ui_MainWindow2(object):
        count = self.listWidget_2.count()
        sender.clear()
        sender.append(self.word1.text())
-       reactor.connectTCP('localhost', port, ClientChatFactory8())
+       reactor.connectTCP(host, port, ClientChatFactory8())
    def show_wid(self):
         if self.pushButton_3.isChecked():
             self.widget_2.show()
@@ -1012,12 +1276,6 @@ class Ui_MainWindow2(object):
         self.label_7.setText(_translate("MainWindow", "Write messages your friends.No limits!!"))
         self.label_8.setText(_translate("MainWindow", "     First you can try:"))
         self.label_10.setText(_translate("MainWindow", "Free calling"))
-   def closeEvent(self,event):
-       if self.myclose:
-           print("Закрылось")
-       else:
-           event.ignore()
-           print("Не закрывается")
 class Auth(Protocol):
         def __init__(self):
             self.ui1 = Ui_MainWindow()
@@ -1048,7 +1306,7 @@ class Auth(Protocol):
                         MainWindow.hide()
                         print('Welcome', inf['login'])
                         self.transport.loseConnection()
-                        reactor.connectTCP('localhost', port, ClientChatFactory3())
+                        reactor.connectTCP(host, port, ClientChatFactory3())
                 elif get_data_in_dict['set'] == 'no auth':
                     self.ui.lineEdit.setStyleSheet("background-color: red;"
                                                    "border-top-right-radius:10%;"
@@ -1085,18 +1343,17 @@ class Reg(Protocol):
         send_data_reg_utf = send_data_reg.encode('utf-8')
         self.transport.write(send_data_reg_utf)
         if get_data_in_dict2['set'] == 'auth':
-            MainWindow.hide()
-            print('Welcome', inf['login'])
-            self.transport.loseConnection()
-            reactor.connectTCP('localhost', port, ClientChatFactory3())
+                        MainWindow.hide()
+                        print('Welcome', inf['login'])
+                        self.transport.loseConnection()
+                        reactor.connectTCP(host, port, ClientChatFactory3())
         elif get_data_in_dict2['set'] == 'no auth':
-            self.ui.lineEdit.setStyleSheet("background-color: red;"
-                                           "border-top-right-radius:10%;"
-                                           "border-bottom-right-radius:10%;")
-            self.ui.lineEdit_2.setStyleSheet("background-color: red;"
-                                             "border-top-right-radius:10%;"
-                                             "border-bottom-right-radius:10%;")
-
+                        self.ui.lineEdit.setStyleSheet("background-color: red;"
+                                                       "border-top-right-radius:10%;"
+                                                       "border-bottom-right-radius:10%;")
+                        self.ui.lineEdit_2.setStyleSheet("background-color: red;"
+                                                         "border-top-right-radius:10%;"
+                                                         "border-bottom-right-radius:10%;")
     def connectionLost(self, reason):
         print('disconnected, reason:', reason)
 class GetMessages(Protocol):
@@ -1111,8 +1368,11 @@ class GetMessages(Protocol):
         global  add_mess
         global  list_mess
         global sender
+        global file_extension
         get_data3 = data.decode('utf-8')
+        print(get_data3)
         get_data_in_dict3 = json.loads(get_data3)
+        print(get_data_in_dict3)
         request = {}
         login_in_string = ''.join(name[0])
         request['nick'] = login_in_string
@@ -1120,12 +1380,19 @@ class GetMessages(Protocol):
         request_string = json.dumps(request)
         request_utf = request_string.encode('utf-8')
         self.transport.write(request_utf)
-        reactor.connectTCP('localhost', port, ClientChatFactory6())
+        reactor.connectTCP(host, port, ClientChatFactory6())
         if registered == False:
                 self.ui2 = Ui_MainWindow2()
                 self.ui2.setupUi(MainWindow)
                 MainWindow.show()
                 registered = True
+        elif Add_widget == True:
+            Add_widget = False
+            file_ex = ''.join(file_extension)
+            if file_ex == '.jpg' or file_ex == '.jpeg' or file_ex == '.png':
+                self.ui2.show_photo_in_chat2()
+            else:
+                self.ui2.show_file_in_chat2()
         elif showclient == True:
                 showclient = False
                 self.add_user2()
@@ -1136,63 +1403,146 @@ class GetMessages(Protocol):
                         sender1 = ''.join(sender)
                         nick = (message[0:+message.find(":")])
                         if nick == sender1:
-                            # self.count = self.ui2.listWidget_2.count()
-                            # if self.count > 0:
-                            #     pass
-                            # else:
                                 self.add_mess(message)
                         else:
                             self.find = self.ui2.listWidget_2.findItems(nick, PyQt5.QtCore.Qt.MatchContains)
                             if len(self.find) > 0:
                                 pass
+                                # song = pyglet.media.load('D:/Python/plyus_org-z_uk-u_edomleniya-4.mp3')
+                                # song.play()
                             else:
                                 self.ui2.listWidget_2.addItem(nick)
                                 self.ui2.listWidget_2.clicked.connect(self.ui2.open_chat)
         elif add_mess == True:
             add_mess = False
             count = 0
-            lenght = len(list_mess)
+            lenght = int(len(list_mess))
+            print(lenght)
             for message in list_mess:
+                find_string = message.find(":")
                 count += 1
-                myQListWidgetItem = QtWidgets.QListWidgetItem(message)
-                self.ui2.listWidget_3.setStyleSheet("QListWidget::item{\n" 
-                                                    "border:0;"
-                                                    "width:0px;"
-                                                    "}"
-                                                    "QListWidget::item:selected{\n"
-                                                    "color:black;"
-                                                    "border: 0;"
-                                                    "width:0px;"
-                                                    "}"
-                                                    )
-                self.ui2.listWidget_3.setFocusPolicy(QtCore.Qt.NoFocus)
-                self.ui2.listWidget_3.addItem(myQListWidgetItem)
                 if lenght == count:
-                        print('зашло')
+                    if find_string != -1:
+                        message = (message[message.find(":") + 1:])
+                        self.bring_messege3(message)
                         list_mess.clear()
                         break
+                    elif find_string == -1:
+                        self.add_mess(message)
+                        list_mess.clear()
+                        break
+                elif find_string != -1:
+                  message = (message[message.find(":")+1:])
+                  self.bring_messege3(message)
+                elif find_string == -1:
+                    self.add_mess(message)
         elif write == True:
                 write = False
                 self.bring_messege2()
-        elif Add_widget == True:
-            Add_widget = False
-            self.ui2.show_file_in_chat2()
         elif get_data_in_dict3['set'] == 'no mesg':
                     pass
     def add_mess(self, message):
-        myQListWidgetItem = QtWidgets.QListWidgetItem(message)
-        self.ui2.listWidget_3.setStyleSheet("QListWidget::item{\n"
-                                      "border:0;"
-                                      "width:0px;"
-                                      "}"
-                                      "QListWidget::item:selected{\n"
-                                      "color:black;"
-                                      "border: 0;"
-                                      "width:0px;"
-                                      "}"
-                                      )
-        self.ui2.listWidget_3.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.ui2.listWidget_3.addItem(myQListWidgetItem)
+        wrapmessage = textwrap.fill(message, 40)
+        myQListWidgetItem = QtWidgets.QListWidgetItem()
+        Frame = QtWidgets.QFrame()
+        Frame.setStyleSheet("QFrame{"
+                            "background-color:white;"
+                            "}")
+        textEdit = QtWidgets.QTextEdit(Frame)
+        textEdit.setGeometry(QtCore.QRect(50, 40, 141, 61))
+        text = (len(message))
+        if text > 80:
+            textEdit.setStyleSheet("QTextEdit{\n"
+                                        "background-color:rgb(218, 226, 222); \n"
+                                        "border-bottom-left-radius:20%;\n"
+                                        "border-top-left-radius:1%;\n"
+                                        "border-bottom-right-radius:20%;\n"
+                                        "border-top-right-radius:20%;\n"
+                                        "}")
+            self.ui2.listWidget_3.setStyleSheet("QListWidget::item{\n"
+                                          "border:0;"
+                                          "width:0px;"
+                                          "}"
+                                          "QListWidget::item:selected{\n"
+                                          "color:black;"
+                                          "border: 0;"
+                                          "width:0px;"
+                                          "}"
+                                          )
+            font = textEdit.document().defaultFont()
+            textEdit.document().setPlainText(wrapmessage)
+            fontMetrics = QFontMetrics(font)
+            textSize = fontMetrics.size(0, textEdit.toPlainText())
+            w = textSize.width() + 10
+            h = textSize.height() + 10
+            textEdit.setMinimumSize(w, h)
+            textEdit.setMaximumSize(w, h)
+            textEdit.resize(w, h)
+            textEdit.setReadOnly(True)
+            myQListWidgetItem.setSizeHint(QtCore.QSize(10, h*3))
+            label = QtWidgets.QLabel(Frame)
+            label.setGeometry(QtCore.QRect(10, 8, 41, 41))
+            pixmap = QtGui.QPixmap("D:/Картинки/243ddbbca3f8525c02f50b54b27d43.jpg")
+            radius = 160
+            rounded = QtGui.QPixmap(pixmap.size())
+            rounded.fill(QtGui.QColor("transparent"))
+            painter = QtGui.QPainter(rounded)
+            painter.setRenderHint(QtGui.QPainter.Antialiasing)
+            painter.setBrush(QtGui.QBrush(pixmap))
+            painter.setPen(QtCore.Qt.NoPen)
+            painter.drawRoundedRect(pixmap.rect(), radius, radius)
+            painter.end()
+            label.setPixmap(rounded)
+            label.setScaledContents(True)
+            self.ui2.listWidget_3.setFocusPolicy(QtCore.Qt.NoFocus)
+            self.ui2.listWidget_3.addItem(myQListWidgetItem)
+            self.ui2.listWidget_3.setItemWidget(myQListWidgetItem,Frame)
+        elif text < 80:
+            textEdit.setStyleSheet("QTextEdit{\n"
+                                   "background-color:rgb(218, 226, 222); \n"
+                                   "border-bottom-left-radius:10%;\n"
+                                   "border-top-left-radius:1%;\n"
+                                   "border-bottom-right-radius:10%;\n"
+                                   "border-top-right-radius:10%;\n"
+                                   "}")
+            self.ui2.listWidget_3.setStyleSheet("QListWidget::item{\n"
+                                                "border:0;"
+                                                "width:0px;"
+                                                "}"
+                                                "QListWidget::item:selected{\n"
+                                                "color:black;"
+                                                "border: 0;"
+                                                "width:0px;"
+                                                "}"
+                                                )
+            font = textEdit.document().defaultFont()
+            textEdit.document().setPlainText(wrapmessage)
+            fontMetrics = QFontMetrics(font)
+            textSize = fontMetrics.size(0, textEdit.toPlainText())
+            w = textSize.width() + 10
+            h = textSize.height() + 10
+            textEdit.setMinimumSize(w, h)
+            textEdit.setMaximumSize(w, h)
+            textEdit.resize(w, h)
+            textEdit.setReadOnly(True)
+            myQListWidgetItem.setSizeHint(QtCore.QSize(10, h * 3))
+            label = QtWidgets.QLabel(Frame)
+            label.setGeometry(QtCore.QRect(10, 8, 41, 41))
+            pixmap = QtGui.QPixmap("D:/Картинки/243ddbbca3f8525c02f50b54b27d43.jpg")
+            radius = 160
+            rounded = QtGui.QPixmap(pixmap.size())
+            rounded.fill(QtGui.QColor("transparent"))
+            painter = QtGui.QPainter(rounded)
+            painter.setRenderHint(QtGui.QPainter.Antialiasing)
+            painter.setBrush(QtGui.QBrush(pixmap))
+            painter.setPen(QtCore.Qt.NoPen)
+            painter.drawRoundedRect(pixmap.rect(), radius, radius)
+            painter.end()
+            label.setPixmap(rounded)
+            label.setScaledContents(True)
+            self.ui2.listWidget_3.setFocusPolicy(QtCore.Qt.NoFocus)
+            self.ui2.listWidget_3.addItem(myQListWidgetItem)
+            self.ui2.listWidget_3.setItemWidget(myQListWidgetItem, Frame)
     def add_user2(self):
         global user
         added_user = ''.join(user)
@@ -1200,22 +1550,156 @@ class GetMessages(Protocol):
         user.pop()
     def bring_messege2(self):
         message_send = self.ui2.textEdit.toPlainText()
-        myQListWidgetItem = QtWidgets.QListWidgetItem(message_send)
-        self.ui2.listWidget_3.setStyleSheet("QListWidget::item{\n"
-                                      "border:0;"
-                                      "width:0px;"
-                                      "}"
-                                      "QListWidget::item:selected{\n"
-                                      "color:black;"
-                                      "border: 0;"
-                                      "width:0px;"
-                                      "}"
-                                      )
-        self.ui2.listWidget_3.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.ui2.listWidget_3.addItem(myQListWidgetItem)
-        self.ui2.textEdit.clear()
-    # def show_file_in_chat(self):
-    #     self.ui2.show_file_in_chat2()
+        wrapmessage = textwrap.fill(message_send, 24)
+        myQListWidgetItem = QtWidgets.QListWidgetItem()
+        verticalLayoutWidget = QtWidgets.QWidget()
+        verticalLayout = QtWidgets.QVBoxLayout(verticalLayoutWidget)
+        textEdit = QtWidgets.QTextEdit(verticalLayoutWidget)
+        # textEdit.setGeometry(QtCore.QRect(560, 5, 141, 61))
+        verticalLayout.addWidget(textEdit, 0, QtCore.Qt.AlignRight)
+        text = (len(message_send))
+        if text > 80:
+            textEdit.setStyleSheet("QTextEdit{\n"
+                                   "background-color:rgb(218, 226, 222); \n"
+                                   "border-bottom-left-radius:20%;\n"
+                                   "border-top-left-radius:20%;\n"
+                                   "border-bottom-right-radius:20%;\n"
+                                   "border-top-right-radius:1%;\n"
+                                   "}")
+            self.ui2.listWidget_3.setStyleSheet("QListWidget::item{\n"
+                                                "border:0;"
+                                                "width:0px;"
+                                                "}"
+                                                "QListWidget::item:selected{\n"
+                                                "color:black;"
+                                                "border: 0;"
+                                                "width:0px;"
+                                                "}"
+                                                )
+            font = textEdit.document().defaultFont()
+            textEdit.document().setPlainText(wrapmessage)
+            fontMetrics = QFontMetrics(font)
+            textSize = fontMetrics.size(0, textEdit.toPlainText())
+            w = textSize.width() + 10
+            h = textSize.height() + 10
+            textEdit.setMinimumSize(w, h)
+            textEdit.setMaximumSize(w, h)
+            textEdit.resize(w, h)
+            textEdit.setReadOnly(True)
+            myQListWidgetItem.setSizeHint(QtCore.QSize(10, h*1.3))
+            self.ui2.listWidget_3.setFocusPolicy(QtCore.Qt.NoFocus)
+            self.ui2.listWidget_3.addItem(myQListWidgetItem)
+            self.ui2.listWidget_3.setItemWidget(myQListWidgetItem, verticalLayoutWidget)
+            self.ui2.textEdit.clear()
+        elif text < 80:
+            textEdit.setStyleSheet("QTextEdit{\n"
+                                   "background-color:rgb(218, 226, 222); \n"
+                                   "border-bottom-left-radius:10%;\n"
+                                   "border-top-left-radius:10%;\n"
+                                   "border-bottom-right-radius:10%;\n"
+                                   "border-top-right-radius:1%;\n"
+                                   "}")
+            self.ui2.listWidget_3.setStyleSheet("QListWidget::item{\n"
+                                                "border:0;"
+                                                "width:0px;"
+                                                "}"
+                                                "QListWidget::item:selected{\n"
+                                                "color:black;"
+                                                "border: 0;"
+                                                "width:0px;"
+                                                "}"
+                                                )
+            font = textEdit.document().defaultFont()
+            textEdit.document().setPlainText(wrapmessage)
+            fontMetrics = QFontMetrics(font)
+            textSize = fontMetrics.size(0, textEdit.toPlainText())
+            w = textSize.width() + 10
+            h = textSize.height() + 10
+            textEdit.setMinimumSize(w, h)
+            textEdit.setMaximumSize(w, h)
+            textEdit.resize(w, h)
+            textEdit.setReadOnly(True)
+            myQListWidgetItem.setSizeHint(QtCore.QSize(10, h*1.3))
+            self.ui2.listWidget_3.setFocusPolicy(QtCore.Qt.NoFocus)
+            self.ui2.listWidget_3.addItem(myQListWidgetItem)
+            self.ui2.listWidget_3.setItemWidget(myQListWidgetItem, verticalLayoutWidget)
+            self.ui2.textEdit.clear()
+    def bring_messege3(self,message):
+        wrapmessage = textwrap.fill(message, 24)
+        myQListWidgetItem = QtWidgets.QListWidgetItem()
+        verticalLayoutWidget = QtWidgets.QWidget()
+        verticalLayout = QtWidgets.QVBoxLayout(verticalLayoutWidget)
+        textEdit = QtWidgets.QTextEdit(verticalLayoutWidget)
+        verticalLayout.addWidget(textEdit, 0, QtCore.Qt.AlignRight)
+        text = (len(message))
+        if text > 80:
+            textEdit.setStyleSheet("QTextEdit{\n"
+                                   "background-color:rgb(218, 226, 222); \n"
+                                   "border-bottom-left-radius:20%;\n"
+                                   "border-top-left-radius:20%;\n"
+                                   "border-bottom-right-radius:20%;\n"
+                                   "border-top-right-radius:1%;\n"
+                                   "}")
+            self.ui2.listWidget_3.setStyleSheet("QListWidget::item{\n"
+                                                "border:0;"
+                                                "width:0px;"
+                                                "}"
+                                                "QListWidget::item:selected{\n"
+                                                "color:black;"
+                                                "border: 0;"
+                                                "width:0px;"
+                                                "}"
+                                                )
+            font = textEdit.document().defaultFont()
+            textEdit.document().setPlainText(wrapmessage)
+            fontMetrics = QFontMetrics(font)
+            textSize = fontMetrics.size(0, textEdit.toPlainText())
+            w = textSize.width() + 10
+            h = textSize.height() + 10
+            textEdit.setMinimumSize(w, h)
+            textEdit.setMaximumSize(w, h)
+            textEdit.resize(w, h)
+            textEdit.setReadOnly(True)
+            myQListWidgetItem.setSizeHint(QtCore.QSize(10, h * 1.3))
+            self.ui2.listWidget_3.setFocusPolicy(QtCore.Qt.NoFocus)
+            self.ui2.listWidget_3.addItem(myQListWidgetItem)
+            self.ui2.listWidget_3.setItemWidget(myQListWidgetItem, verticalLayoutWidget)
+            self.ui2.textEdit.clear()
+        elif text < 80:
+            textEdit.setStyleSheet("QTextEdit{\n"
+                                   "background-color:rgb(218, 226, 222); \n"
+                                   "border-bottom-left-radius:10%;\n"
+                                   "border-top-left-radius:10%;\n"
+                                   "border-bottom-right-radius:10%;\n"
+                                   "border-top-right-radius:1%;\n"
+                                   "}")
+            self.ui2.listWidget_3.setStyleSheet("QListWidget::item{\n"
+                                                "border:0;"
+                                                "width:0px;"
+                                                "}"
+                                                "QListWidget::item:selected{\n"
+                                                "color:black;"
+                                                "border: 0;"
+                                                "width:0px;"
+                                                "}"
+                                                )
+            font = textEdit.document().defaultFont()
+            textEdit.document().setPlainText(wrapmessage)
+            fontMetrics = QFontMetrics(font)
+            textSize = fontMetrics.size(0, textEdit.toPlainText())
+            w = textSize.width() + 10
+            h = textSize.height() + 10
+            textEdit.setMinimumSize(w, h)
+            textEdit.setMaximumSize(w, h)
+            textEdit.resize(w, h)
+            textEdit.setReadOnly(True)
+            myQListWidgetItem.setSizeHint(QtCore.QSize(10, h * 1.3))
+            self.ui2.listWidget_3.setFocusPolicy(QtCore.Qt.NoFocus)
+            self.ui2.listWidget_3.addItem(myQListWidgetItem)
+            self.ui2.listWidget_3.setItemWidget(myQListWidgetItem, verticalLayoutWidget)
+            self.ui2.textEdit.clear()
+    def show_file_in_chat(self):
+        self.ui2.show_file_in_chat2()
     def connectionLost(self, reason):
         print('disconected')
 class SentMessages(Protocol):
@@ -1227,6 +1711,7 @@ class SentMessages(Protocol):
         global write
         global send_messege
         global transport_message
+        global add_mess
         get_data4 = data.decode('utf-8')
         get_data_in_dict4 = json.loads(get_data4)
         if get_data_in_dict4['set'] == 'Hello from server' and transport_message == True:
@@ -1287,8 +1772,40 @@ class GetFile(Protocol):
         except builtins.UnicodeDecodeError:
             len_data = int(len(data))
             sum_data += len_data
-            self.f = open(r'D:/Python/Files/%s' % information_file['filename'], 'ab')
-            self.GetFile(file_data=data)
+            if os.path.exists("D:/Files") and os.path.isdir("D:/Files"):
+                try:
+                    self.f = open(r'D:/Files/%s' % information_file['filename'], 'ab')
+                    self.GetFile(file_data=data)
+                except builtins.KeyError:
+                    decompres_data = gzip.decompress(data)
+                    get_data6 = decompres_data.decode('utf-8')
+                    get_data_in_dict6 = json.loads(get_data6)
+                    if get_data_in_dict6['set'] == 'get another file':
+                        del get_data_in_dict6['set']
+                        with open('D:/Files/%s' % (get_data_in_dict6['filename']), 'w') as f:
+                                f.write(get_data_in_dict6['filedata'])
+                                answer = {}
+                                answer['set'] = 'Nice'
+                                self.transport.write(json.dumps(answer).encode('utf-8'))
+                                self.transport.loseConnection()
+            else:
+                try:
+                    os.mkdir("D:/Files")
+                    self.f = open(r'D:/Files/%s' % information_file['filename'], 'ab')
+                    self.GetFile(file_data=data)
+                except builtins.KeyError:
+                    decompres_data = gzip.decompress(data)
+                    get_data6 = decompres_data.decode('utf-8')
+                    get_data_in_dict6 = json.loads(get_data6)
+                    if get_data_in_dict6['set'] == 'get another file':
+                        del get_data_in_dict6['set']
+                        with open('D:/Files/%s' % (get_data_in_dict6['filename']), 'w') as f:
+                            f.write(get_data_in_dict6['filedata'])
+                            answer = {}
+                            answer['set'] = 'Nice'
+                            self.transport.write(json.dumps(answer).encode('utf-8'))
+                            self.transport.loseConnection()
+
         else:
             if get_data_in_dict6['set'] == 'Hello from server':
                 request = {}
@@ -1298,6 +1815,23 @@ class GetFile(Protocol):
                 request_in_string = json.dumps(request)
                 request_in_format_utf = request_in_string.encode('utf-8')
                 self.transport.write(request_in_format_utf)
+            elif get_data_in_dict6['set'] == 'get another file':
+                del get_data_in_dict6['set']
+                if os.path.exists("D:/Files") and os.path.isdir("D:/Files"):
+                  with open('D:/Files/%s' % (get_data_in_dict6['filename']), 'w') as f:
+                        f.write(get_data_in_dict6['filedata'])
+                        answer = {}
+                        answer['set'] = 'Nice'
+                        self.transport.write(json.dumps(answer).encode('utf-8'))
+                        self.transport.loseConnection()
+                else:
+                    os.mkdir("D:/Files")
+                    with open('D:/Files/%s' % (get_data_in_dict6['filename']), 'w') as f:
+                        f.write(get_data_in_dict6['filedata'])
+                        answer = {}
+                        answer['set'] = 'Nice'
+                        self.transport.write(json.dumps(answer).encode('utf-8'))
+                        self.transport.loseConnection()
             elif get_data_in_dict6['set'] == 'no file':
                 self.transport.loseConnection()
             elif get_data_in_dict6['set'] == 'no exist':
@@ -1311,14 +1845,10 @@ class GetFile(Protocol):
                 login = ''.join(name[0])
                 request_on_transport_file['dir'] = login
                 request_on_transport_file_string = json.dumps(request_on_transport_file)
-                print('file make')
                 self.transport.write(request_on_transport_file_string.encode('utf-8'))
     def GetFile(self, file_data):
         global sum_data
         global Add_widget
-        print('Get in Getfile')
-        print(information_file['size'])
-        print(sum_data)
         if sum_data == information_file['size']:
             self.f.write(file_data)
             sum_data = 0
@@ -1347,6 +1877,7 @@ class SentFile(Protocol):
         global file_extension
         global Add_widget
         global file_size
+        global sum_data2
         try:
             get_data7 = data.decode('utf-8')
             get_data_in_dict7 = json.loads(get_data7)
@@ -1361,27 +1892,32 @@ class SentFile(Protocol):
                 if os.path.isfile(j):
                     self.file3 = open(j, 'rb')
                     data2 = self.file3.read()
-                    print(len(data2))
-                    if data2:
-                        print('length of  data ={}'.format(len(data2)))
-                        # Add_widget = True
-                        self.file3.close()
-                        self.transport.write(data2)
-                        self.transport.loseConnection()
-                        fullfilename.clear()
-                        file.clear()
-                        bring_user.clear()
-                        file_extension.clear()
-                        transport_file = False
-                    else:
-                        self.transport.loseConnection()
-                else:
+                    print('length of  data ={}'.format(len(data2)))
+                    Add_widget = True
+                    self.transport.write(data2)
+                    self.file3.close()
                     self.transport.loseConnection()
+            elif get_data_in_dict7['set'] == 'trans txt':
+                fullfilename_q = ''.join(fullfilename)
+                login = ''.join(name[0])
+                recipient = ''.join(bring_user[0])
+                relative_file_path = ''.join(file)
+                extension = ''.join(file_extension)
+                with open(fullfilename_q, 'r') as wfile2:
+                    data_txt = {}
+                    data_txt_file = wfile2.read()
+                    data_txt['datafile'] = data_txt_file
+                    data_txt['set'] = 'transport txt file'
+                    js_data = json.dumps(data_txt)
+                    bytes_data_txt_file = js_data.encode('utf-8')
+                    compress_data = gzip.compress(bytes_data_txt_file)
+                    self.transport.write(compress_data)
+                    Add_widget = True
             elif get_data_in_dict7['set'] == 'Hello from server' and transport_file == True:
                 data_file = {}
                 fullfilename_q = ''.join(fullfilename)
                 login = ''.join(name[0])
-                recipient = ''.join(bring_user)
+                recipient = ''.join(bring_user[0])
                 relative_file_path = ''.join(file)
                 extension = ''.join(file_extension)
                 if extension == '.png':
@@ -1392,7 +1928,6 @@ class SentFile(Protocol):
                     data_file['filename'] = relative_file_path
                     data_file['fullfilename'] = fullfilename_q
                     data_file['filesize'] = int(file_size[0])
-                    # filesender.beginFileTransfer(data, self.transport)
                     data_file_string2 = json.dumps(data_file)
                     data_file_format_utf2 = data_file_string2.encode('utf-8')
                     self.transport.write(data_file_format_utf2)
@@ -1404,7 +1939,6 @@ class SentFile(Protocol):
                     data_file['filename'] = relative_file_path
                     data_file['fullfilename'] = fullfilename_q
                     data_file['filesize'] = int(file_size[0])
-                    # filesender.beginFileTransfer(data, self.transport)
                     data_file_string2 = json.dumps(data_file)
                     data_file_format_utf2 = data_file_string2.encode('utf-8')
                     self.transport.write(data_file_format_utf2)
@@ -1416,7 +1950,6 @@ class SentFile(Protocol):
                     data_file['filename'] = relative_file_path
                     data_file['fullfilename'] = fullfilename_q
                     data_file['filesize'] = int(file_size[0])
-                    # filesender.beginFileTransfer(data, self.transport)
                     data_file_string2 = json.dumps(data_file)
                     data_file_format_utf2 = data_file_string2.encode('utf-8')
                     self.transport.write(data_file_format_utf2)
@@ -1432,22 +1965,16 @@ class SentFile(Protocol):
                     data_file_format_utf2 = data_file_string2.encode('utf-8')
                     self.transport.write(data_file_format_utf2)
                 else:
-                    with open(fullfilename_q, 'r') as wfile2:
-                        data = wfile2.read()
-                        print(data)
-                        data_file['set'] = 'bring file'
-                        data_file['sender'] = login
-                        data_file['receipient'] = recipient
-                        data_file['datafile'] = data
-                        data_file['filename'] = relative_file_path
-                        data_file['fullfilename'] = fullfilename_q
-                        data_file['filesize'] = file_size
-                        # filesender.beginFileTransfer(data, self.transport)
-                        data_file_string2 = json.dumps(data_file)
-                        data_file_format_utf2 = data_file_string2.encode('utf-8')
-                        self.transport.write(data_file_format_utf2)
-                        file.clear()
-                        bring_user.clear()
+                    data_file['set'] = 'bring file'
+                    data_file['sender'] = login
+                    data_file['receipient'] = recipient
+                    data_file['filename'] = relative_file_path
+                    data_file['fullfilename'] = fullfilename_q
+                    data_file['filesize'] = file_size
+                    data_file['file_extension'] = extension
+                    data_file_string2 = json.dumps(data_file)
+                    data_file_format_utf2 = data_file_string2.encode('utf-8')
+                    self.transport.write(data_file_format_utf2)
     def connectionLost(self, reason):
         print('disconected')
 class Synchronization_Of_Messages(Protocol):
@@ -1458,60 +1985,73 @@ class Synchronization_Of_Messages(Protocol):
         global sender
         global add_mess
         global list_mess
-        global  name
-        global  get_mess
-        get_data5 = data.decode('utf-8')
-        get_data_in_dict5 = json.loads(get_data5)
-        login = ''.join(name[0])
-        sender2 = ''.join(sender[0])
-        request = {}
-        request['set'] = 'GET'
-        request['login'] = login
-        request['sender'] = sender2
-        data_file_string2 = json.dumps(request)
-        data_file_format_utf2 = data_file_string2.encode('utf-8')
-        self.transport.write(data_file_format_utf2)
-        if get_data_in_dict5['set'] == 'no mess':
-            print('no messages')
-        elif get_data_in_dict5['set'] == 'receive':
-            del get_data_in_dict5['set']
-            count = 0
-            for key, value in get_data_in_dict5.items():
-                count +=1
-                print(get_data_in_dict5)
-                message = ''.join(value)
-                add_mess = True
-                if get_mess == True:
-                    list_mess.append(message)
-                if len(get_data_in_dict5) == count:
-                    get_mess = False
-                    break
+        global name
+        global get_mess
+        global write
+        try:
+            decompres_data = gzip.decompress(data)
+            get_data5 = decompres_data.decode('utf-8')
+            get_data_in_dict5 = json.loads(get_data5)
+        except gzip.BadGzipFile:
+            get_data5 = data.decode('utf-8')
+            get_data_in_dict5 = json.loads(get_data5)
+            login = ''.join(name[0])
+            sender2 = ''.join(sender[0])
+            request = {}
+            request['set'] = 'GET'
+            request['login'] = login
+            request['sender'] = sender2
+            data_file_string2 = json.dumps(request)
+            data_file_format_utf2 = data_file_string2.encode('utf-8')
+            self.transport.write(data_file_format_utf2)
+            if get_data_in_dict5['set'] == 'no mess':
+                    print('no messages')
+            elif get_data_in_dict5['set'] == 'receive':
+                    print(get_data_in_dict5)
+                    del get_data_in_dict5['set']
+                    count = 0
+                    lenght = int(len(get_data_in_dict5))
+                    for key, value in get_data_in_dict5.items():
+                        count += 1
+                        print(get_data_in_dict5)
+                        message = ''.join(value)
+                        add_mess = True
+                        if lenght == count:
+                            get_mess = False
+                            self.transport.loseConnection()
+                            break
+                        elif get_mess == True:
+                            list_mess.append(message)
+        else:
+            login = ''.join(name[0])
+            sender2 = ''.join(sender[0])
+            request = {}
+            request['set'] = 'GET'
+            request['login'] = login
+            request['sender'] = sender2
+            data_file_string2 = json.dumps(request)
+            data_file_format_utf2 = data_file_string2.encode('utf-8')
+            self.transport.write(data_file_format_utf2)
+            if get_data_in_dict5['set'] == 'no mess':
+                print('no messages')
+            elif get_data_in_dict5['set'] == 'receive':
+                    print(get_data_in_dict5)
+                    del get_data_in_dict5['set']
+                    count = 0
+                    lenght = int(len(get_data_in_dict5))
+                    for key, value in get_data_in_dict5.items():
+                        count += 1
+                        message = ''.join(value)
+                        if lenght == count:
+                            get_mess = False
+                            add_mess = True
+                            list_mess.append(message)
+                            self.transport.loseConnection()
+                            break
+                        elif get_mess == True:
+                            list_mess.append(message)
     def connectionLost(self, reason):
             print('disconected')
-# class Change_Status(Protocol):
-#     def connectionMade(self):
-#         print('Change_Status connected')
-#     def dataReceived(self, data):
-#         global name
-#         global sender
-#         global add_mess
-#         global list_mess
-#         global name
-#         global  customer
-#         get_data5 = data.decode('utf-8')
-#         get_data_in_dict5 = json.loads(get_data5)
-#         login = ''.join(name[0])
-#         sender2 = ''.join(sender[0])
-#         request = {}
-#         request['set'] = 'Change status'
-#         request['login'] = login
-#         request['sender'] = sender2
-#         self.transport.write(json.dumps(request).encode('utf-8'))
-#         if get_data_in_dict5['set'] =='Change':
-#
-#             reactor.connectTCP('localhost', port, ClientChatFactory8())
-#     def connectionLost(self, reason):
-#             print('disconected')
 class ClientChatFactory(ClientFactory):
         def startedConnecting(self, connector):
             print('connect..')
@@ -1583,30 +2123,22 @@ class ClientChatFactory8(ClientFactory):
     def clientConnectionFailed(self, connector, reason):
             print('ConnectionFailed, reason:', reason)
     def clientConnectionLost(self, connector, reason):
-            # global name
-            # login = ''.join(name[0])
-            # status = True
-            # change_status(status, login)
             print('ConnectionLost, reason:', reason)
-# class ClientChatFactory9(ClientFactory):
-#     def startedConnecting(self, connector):
-#             print('connect..')
-#     def buildProtocol(self, addr):
-#             return Change_Status()
-#     def clientConnectionFailed(self, connector, reason):
-#             print('ConnectionFailed, reason:', reason)
-#     def clientConnectionLost(self, connector, reason):
-#             print('ConnectionLost, reason:', reason)
 def appExec():
     app = QApplication(sys.argv)
     # and so on until we reach:
     app.exec_()
     print("my message...")
     # other work...
+# def soundtrack():
+#     song = pyglet.media.load('D:/Python/plyus_org-z_uk-u_edomleniya-4.mp3')
+#     song.play()
+#     pyglet.app.run()
 if __name__ == "__main__":
+    if 'twisted.internet.reactor' in sys.modules:
+        del sys.modules['twisted.internet.reactor']
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
-    import sys
     import qt5reactor
     qt5reactor.install()
     from twisted.internet import reactor
