@@ -11,6 +11,8 @@ import os
 import sys
 import time
 import json
+import lzma
+from datetime import datetime
 import gzip
 from twisted.internet import task, protocol
 from twisted.protocols.basic import FileSender
@@ -32,8 +34,8 @@ import pyglet
 import textwrap
 import enchant
 import re
-port = 6002
-host = '46.4.105.30'
+port = 6567
+host = '213.133.104.53'
 # host = 'localhost'
 information_file = {}
 file = []
@@ -58,9 +60,11 @@ get_mess = False
 transport_message = False
 transport_file = False
 Add_widget = False
+Add_widget2 = False
 tm = time.time()
 inf = {}
 message = {}
+messages = {}
 class Ui_MainWindow1(object):
         def conn(self):
             self.ui = Ui_MainWindow()
@@ -1045,6 +1049,223 @@ class Ui_MainWindow2(object):
        bring_user.clear()
        file_extension.clear()
        transport_file = False
+   def show_photo_in_chat5(self, filename):
+       global name
+       global bring_user
+       global write
+       global send_messege
+       global transport_message
+       global transport_file
+       global file
+       global fullfilename
+       global file_extension
+       ListWidgetItem = QtWidgets.QListWidgetItem()
+       ListWidgetItem.setSizeHint(QtCore.QSize(10, 251))
+       Frame = QtWidgets.QFrame()
+       Frame.setStyleSheet('QFrame{'
+                           'background-color:white;'
+                           '}')
+       label = QtWidgets.QLabel(Frame)
+       label.setGeometry(QtCore.QRect(485,5, 151, 241))
+       pixmap = QtGui.QPixmap(filename)
+       radius = 50
+       rounded = QtGui.QPixmap(pixmap.size())
+       rounded.fill(QtGui.QColor("transparent"))
+       painter = QtGui.QPainter(rounded)
+       painter.setRenderHint(QtGui.QPainter.Antialiasing)
+       painter.setBrush(QtGui.QBrush(pixmap))
+       painter.setPen(QtCore.Qt.NoPen)
+       painter.drawRoundedRect(pixmap.rect(), radius, radius)
+       painter.end()
+       label.setPixmap(rounded)
+       label.setScaledContents(True)
+       self.listWidget_3.addItem(ListWidgetItem)
+       self.listWidget_3.setItemWidget(ListWidgetItem, Frame)
+   def show_photo_in_chat3(self):
+       global name
+       global bring_user
+       global write
+       global send_messege
+       global transport_message
+       global transport_file
+       global file
+       global fullfilename
+       global file_extension
+       filef = "D:/Files/%s"%(information_file['filename'])
+       ListWidgetItem = QtWidgets.QListWidgetItem()
+       ListWidgetItem.setSizeHint(QtCore.QSize(10, 251))
+       Frame = QtWidgets.QFrame()
+       Frame.setStyleSheet('QFrame{'
+                           'background-color:white;'
+                           '}')
+       label = QtWidgets.QLabel(Frame)
+       label.setGeometry(QtCore.QRect(15,5, 151, 241))
+       pixmap = QtGui.QPixmap(filef)
+       radius = 50
+       rounded = QtGui.QPixmap(pixmap.size())
+       rounded.fill(QtGui.QColor("transparent"))
+       painter = QtGui.QPainter(rounded)
+       painter.setRenderHint(QtGui.QPainter.Antialiasing)
+       painter.setBrush(QtGui.QBrush(pixmap))
+       painter.setPen(QtCore.Qt.NoPen)
+       painter.drawRoundedRect(pixmap.rect(), radius, radius)
+       painter.end()
+       label.setPixmap(rounded)
+       label.setScaledContents(True)
+       self.listWidget_3.addItem(ListWidgetItem)
+       self.listWidget_3.setItemWidget(ListWidgetItem, Frame)
+   def show_file_in_chat3(self):
+       global name
+       global bring_user
+       global write
+       global send_messege
+       global transport_message
+       global transport_file
+       global file
+       global fullfilename
+       global file_extension
+       global Add_widget2
+       if Add_widget2 == True:
+           login = information_file['sender']
+           ListWidgetItem = QtWidgets.QListWidgetItem()
+           Frame = QtWidgets.QFrame()
+           Frame.setStyleSheet('QFrame{'
+                               'background-color:white;'
+                               '}')
+           PushButton = QPushButton(Frame)
+           PushButton.setStyleSheet("QPushButton{\n"
+                                    "background-color:rgb(139, 250, 255);\n"
+                                    "border:0px;\n"
+                                    "border-bottom-left-radius:15%;\n"
+                                    "border-top-left-radius:15%;\n"
+                                    "border-bottom-right-radius:15%;\n"
+                                    "border-top-right-radius:15%;\n"
+                                    "}")
+           PushButton.setGeometry(QtCore.QRect(15,5,151, 61))
+           ListWidgetItem.setSizeHint(QtCore.QSize(10, 70))
+           PushButton2 = QPushButton(PushButton)
+           icon = QtGui.QIcon()
+           icon.addPixmap(QtGui.QPixmap("C:/Users/millioner/PycharmProjects/Chat/open_file2.png"), QtGui.QIcon.Normal,
+                          QtGui.QIcon.Off)
+           PushButton2.setIcon(icon)
+           PushButton2.setIconSize(QtCore.QSize(40, 50))
+           PushButton2.setStyleSheet("QPushButton{\n"
+                                      "background-color:rgb(139, 250, 255);\n"            
+                                      "border:0px;\n"
+                                      "border-bottom-left-radius:15%;\n"
+                                      "border-top-left-radius:15%;\n"
+                                      "}")
+           PushButton2.setGeometry(QtCore.QRect(0, 0, 61, 61))
+           label2 = QtWidgets.QLabel(PushButton)
+           label2.setGeometry(QtCore.QRect(62, 0, 71, 20))
+           label2.setStyleSheet("QLabel{\n"
+                                      "background-color:rgb(139, 250, 255);\n"  
+                                      "}")
+
+           label2.setText(login)
+           label2.setAlignment(QtCore.Qt.AlignCenter)
+           label = QtWidgets.QLabel(PushButton)
+           label.setGeometry(QtCore.QRect(63, 23, 71, 31))
+           label.setStyleSheet("QLabel{\n"
+                                    "background-color:rgb(139, 250, 255);\n"   
+                                    "\n"
+                                    "}")
+           label.setText(information_file['filename'])
+           label.setAlignment(QtCore.Qt.AlignCenter)
+           self.listWidget_3.addItem(ListWidgetItem)
+           self.listWidget_3.setItemWidget(ListWidgetItem, Frame)
+   def show_file_in_chat4(self, nameL,filename):
+       global bring_user
+       global write
+       global send_messege
+       global transport_message
+       global transport_file
+       global file
+       global fullfilename
+       global file_extension
+       global Add_widget2
+       login = nameL
+       ListWidgetItem = QtWidgets.QListWidgetItem()
+       Frame = QtWidgets.QFrame()
+       Frame.setStyleSheet('QFrame{'
+                           'background-color:white;'
+                           '}')
+       PushButton = QPushButton(Frame)
+       PushButton.setStyleSheet("QPushButton{\n"
+                                "background-color:rgb(139, 250, 255);\n"
+                                "border:0px;\n"
+                                "border-bottom-left-radius:15%;\n"
+                                "border-top-left-radius:15%;\n"
+                                "border-bottom-right-radius:15%;\n"
+                                "border-top-right-radius:15%;\n"
+                                "}")
+       PushButton.setGeometry(QtCore.QRect(15, 5, 151, 61))
+       ListWidgetItem.setSizeHint(QtCore.QSize(10, 70))
+       PushButton2 = QPushButton(PushButton)
+       icon = QtGui.QIcon()
+       icon.addPixmap(QtGui.QPixmap("C:/Users/millioner/PycharmProjects/Chat/open_file2.png"), QtGui.QIcon.Normal,
+                      QtGui.QIcon.Off)
+       PushButton2.setIcon(icon)
+       PushButton2.setIconSize(QtCore.QSize(40, 50))
+       PushButton2.setStyleSheet("QPushButton{\n"
+                                 "background-color:rgb(139, 250, 255);\n"
+                                 "border:0px;\n"
+                                 "border-bottom-left-radius:15%;\n"
+                                 "border-top-left-radius:15%;\n"
+                                 "}")
+       PushButton2.setGeometry(QtCore.QRect(0, 0, 61, 61))
+       label2 = QtWidgets.QLabel(PushButton)
+       label2.setGeometry(QtCore.QRect(62, 0, 71, 20))
+       label2.setStyleSheet("QLabel{\n"
+                            "background-color:rgb(139, 250, 255);\n"
+                            "}")
+
+       label2.setText(login)
+       label2.setAlignment(QtCore.Qt.AlignCenter)
+       label = QtWidgets.QLabel(PushButton)
+       label.setGeometry(QtCore.QRect(63, 23, 71, 31))
+       label.setStyleSheet("QLabel{\n"
+                           "background-color:rgb(139, 250, 255);\n"
+                           "\n"
+                           "}")
+       label.setText(filename)
+       label.setAlignment(QtCore.Qt.AlignCenter)
+       self.listWidget_3.addItem(ListWidgetItem)
+       self.listWidget_3.setItemWidget(ListWidgetItem, Frame)
+   def show_photo_in_chat4(self,filename):
+       global name
+       global bring_user
+       global write
+       global send_messege
+       global transport_message
+       global transport_file
+       global file
+       global fullfilename
+       global file_extension
+       print(filename)
+       filef = "D:/Files/%s"%(filename)
+       ListWidgetItem = QtWidgets.QListWidgetItem()
+       ListWidgetItem.setSizeHint(QtCore.QSize(10, 251))
+       Frame = QtWidgets.QFrame()
+       Frame.setStyleSheet('QFrame{'
+                           'background-color:white;'
+                           '}')
+       label = QtWidgets.QLabel(Frame)
+       label.setGeometry(QtCore.QRect(15,5, 151, 241))
+       pixmap = QtGui.QPixmap(filef)
+       radius = 50
+       rounded = QtGui.QPixmap(pixmap.size())
+       rounded.fill(QtGui.QColor("transparent"))
+       painter = QtGui.QPainter(rounded)
+       painter.setRenderHint(QtGui.QPainter.Antialiasing)
+       painter.setBrush(QtGui.QBrush(pixmap))
+       painter.setPen(QtCore.Qt.NoPen)
+       painter.drawRoundedRect(pixmap.rect(), radius, radius)
+       painter.end()
+       label.setPixmap(rounded)
+       label.setScaledContents(True)
+       self.listWidget_3.addItem(ListWidgetItem)
+       self.listWidget_3.setItemWidget(ListWidgetItem, Frame)
    def show_file_in_chat2(self):
        global name
        global bring_user
@@ -1111,6 +1332,62 @@ class Ui_MainWindow2(object):
        file.clear()
        bring_user.clear()
        transport_file = False
+   def show_file_in_chat5(self,name,filename):
+       global bring_user
+       global write
+       global send_messege
+       global transport_message
+       global transport_file
+       global file
+       global fullfilename
+       global file_extension
+       ListWidgetItem = QtWidgets.QListWidgetItem()
+       Frame = QtWidgets.QFrame()
+       Frame.setStyleSheet('QFrame{'
+                           'background-color:white;'
+                           '}')
+       PushButton = QPushButton(Frame)
+       PushButton.setStyleSheet("QPushButton{\n"
+                                "background-color:rgb(139, 250, 255);\n"
+                                "border:0px;\n"
+                                "border-bottom-left-radius:15%;\n"
+                                "border-top-left-radius:15%;\n"
+                                "border-bottom-right-radius:15%;\n"
+                                "border-top-right-radius:15%;\n"
+                                "}")
+       PushButton.setGeometry(QtCore.QRect(485,5,151, 61))
+       ListWidgetItem.setSizeHint(QtCore.QSize(10, 70))
+       PushButton2 = QPushButton(PushButton)
+       icon = QtGui.QIcon()
+       icon.addPixmap(QtGui.QPixmap("C:/Users/millioner/PycharmProjects/Chat/open_file2.png"), QtGui.QIcon.Normal,
+                      QtGui.QIcon.Off)
+       PushButton2.setIcon(icon)
+       PushButton2.setIconSize(QtCore.QSize(40, 50))
+       PushButton2.setStyleSheet("QPushButton{\n"
+                                  "background-color:rgb(139, 250, 255);\n"            
+                                  "border:0px;\n"
+                                  "border-bottom-left-radius:15%;\n"
+                                  "border-top-left-radius:15%;\n"
+                                  "}")
+       PushButton2.setGeometry(QtCore.QRect(0, 0, 61, 61))
+       label2 = QtWidgets.QLabel(PushButton)
+       label2.setGeometry(QtCore.QRect(62, 0, 71, 20))
+       label2.setStyleSheet("QLabel{\n"
+                                  "background-color:rgb(139, 250, 255);\n"  
+                                  "}")
+
+       label2.setText(name)
+       label2.setAlignment(QtCore.Qt.AlignCenter)
+       label = QtWidgets.QLabel(PushButton)
+       label.setGeometry(QtCore.QRect(63, 23, 71, 31))
+       label.setStyleSheet("QLabel{\n"
+                                "background-color:rgb(139, 250, 255);\n"   
+                                "\n"
+                                "}")
+       label.setText(filename)
+       label.setAlignment(QtCore.Qt.AlignCenter)
+       self.listWidget_3.addItem(ListWidgetItem)
+       self.listWidget_3.setItemWidget(ListWidgetItem, Frame)
    def open_windows_explorer(self):
         global transport_file
         global file
@@ -1364,11 +1641,13 @@ class GetMessages(Protocol):
         global registered
         global write
         global get_mess
-        global Add_widget
         global  add_mess
         global  list_mess
         global sender
         global file_extension
+        global Add_widget2
+        global  Add_widget
+        global name
         get_data3 = data.decode('utf-8')
         print(get_data3)
         get_data_in_dict3 = json.loads(get_data3)
@@ -1393,6 +1672,15 @@ class GetMessages(Protocol):
                 self.ui2.show_photo_in_chat2()
             else:
                 self.ui2.show_file_in_chat2()
+        elif Add_widget2 == True:
+                file_ex = os.path.splitext(information_file["filename"])[1]
+                print(file_ex)
+                if file_ex == '.jpg' or file_ex == '.jpeg' or file_ex == '.png':
+                    self.ui2.show_photo_in_chat3()
+                    Add_widget2 = False
+                else:
+                    self.ui2.show_file_in_chat3()
+                    Add_widget2 = False
         elif showclient == True:
                 showclient = False
                 self.add_user2()
@@ -1414,28 +1702,79 @@ class GetMessages(Protocol):
                                 self.ui2.listWidget_2.addItem(nick)
                                 self.ui2.listWidget_2.clicked.connect(self.ui2.open_chat)
         elif add_mess == True:
+            global messages
             add_mess = False
             count = 0
-            lenght = int(len(list_mess))
+            lenght = int(len(messages))
             print(lenght)
-            for message in list_mess:
-                find_string = message.find(":")
+            print(messages)
+            for key, value in messages.items():
+                print(key)
+                print(value)
+                find_string = key.find("file")
+                find_string2 = key.find("message")
                 count += 1
-                if lenght == count:
-                    if find_string != -1:
-                        message = (message[message.find(":") + 1:])
-                        self.bring_messege3(message)
-                        list_mess.clear()
-                        break
-                    elif find_string == -1:
+                if find_string2 != -1:
+                    find_string3 = value.find(":")
+                    if lenght == count:
+                        if find_string3 != -1:
+                            message = (value[value.find(":") + 1:])
+                            self.add_mess(message)
+                            break
+                        elif find_string3 == -1:
+                            self.bring_messege3(value)
+                            break
+                    elif find_string3 != -1:
+                        message = (value[value.find(":") + 1:])
                         self.add_mess(message)
-                        list_mess.clear()
-                        break
+                        continue
+                    elif find_string3 == -1:
+                        self.bring_messege3(value)
+                        continue
                 elif find_string != -1:
-                  message = (message[message.find(":")+1:])
-                  self.bring_messege3(message)
-                elif find_string == -1:
-                    self.add_mess(message)
+                    find_string4 = value.find(":")
+                    if lenght == count:
+                            if find_string4 != -1:
+                                f = (value[value.find(":") + 1:])
+                                enlargement = os.path.splitext(f)[1]
+                                if enlargement == '.jpg' or enlargement == '.jpeg' or enlargement == '.png':
+                                    self.ui2.show_photo_in_chat4(f)
+                                    break
+                                else:
+                                    namef = (value[0:+value.find(":")])
+                                    f = (value[value.find(":") + 1:])
+                                    self.ui2.show_file_in_chat4(namef,f)
+                                    break
+                            elif find_string4 == -1:
+                                enlargement = os.path.splitext(value)[1]
+                                if enlargement == '.jpg' or enlargement == '.jpeg' or enlargement == '.png':
+                                    self.ui2.show_photo_in_chat5(value)
+                                    break
+                                else:
+                                    namef = (value[0:+value.find(":")])
+                                    f = (value[value.find(":") + 1:])
+                                    self.ui2.show_file_in_chat5(namef, f)
+                                    break
+                    elif find_string4 != -1:
+                            f = (value[value.find(":") + 1:])
+                            enlargement = os.path.splitext(f)[1]
+                            if enlargement == '.jpg' or enlargement == '.jpeg' or enlargement == '.png':
+                                self.ui2.show_photo_in_chat4(f)
+                                continue
+                            else:
+                                namef = (value[0:+value.find(":")])
+                                f = (value[value.find(":") + 1:])
+                                self.ui2.show_file_in_chat4(namef, f)
+                                continue
+                    elif find_string4 == -1:
+                        enlargement = os.path.splitext(value)[1]
+                        if enlargement == '.jpg' or enlargement == '.jpeg' or enlargement == '.png':
+                            self.ui2.show_photo_in_chat5(value)
+                            continue
+                        else:
+                            f = (value[value.find(":") + 1:])
+                            self.ui2.show_file_in_chat5("".join(name[0]),f)
+                            continue
         elif write == True:
                 write = False
                 self.bring_messege2()
@@ -1718,9 +2057,15 @@ class SentMessages(Protocol):
             data_sender = {}
             login = ''.join(name[0])
             recipient = ''.join(bring_user[0])
+            current_date = datetime.now().date()
+            current_time = datetime.now().time()
+            size_message = sys.getsizeof(send_messege['messege'])
             data_sender['sender'] = login
             data_sender['receipient'] = recipient
             data_sender['set'] = 'write message'
+            data_sender['date'] = str(current_date)
+            data_sender['time'] = str(current_time)
+            data_sender['size_message'] = str(size_message)
             data_sender['message'] = send_messege['messege']
             message_in_string = json.dumps(data_sender)
             message_in_format_utf = message_in_string.encode('utf-8')
@@ -1766,6 +2111,7 @@ class GetFile(Protocol):
         global information_file
         global sum_data
         global Add_widget
+        global Add_widget2
         try:
             get_data6 = data.decode('utf-8')
             get_data_in_dict6 = json.loads(get_data6)
@@ -1777,16 +2123,22 @@ class GetFile(Protocol):
                     self.f = open(r'D:/Files/%s' % information_file['filename'], 'ab')
                     self.GetFile(file_data=data)
                 except builtins.KeyError:
-                    decompres_data = gzip.decompress(data)
+                    text_data = data
+                    decompres_data = lzma.decompress(text_data)
                     get_data6 = decompres_data.decode('utf-8')
+                    time.sleep(0.5)
                     get_data_in_dict6 = json.loads(get_data6)
                     if get_data_in_dict6['set'] == 'get another file':
                         del get_data_in_dict6['set']
+                        information_file['filename'] = get_data_in_dict6['filename']
+                        information_file['sender'] = get_data_in_dict6['sender']
                         with open('D:/Files/%s' % (get_data_in_dict6['filename']), 'w') as f:
                                 f.write(get_data_in_dict6['filedata'])
                                 answer = {}
                                 answer['set'] = 'Nice'
                                 self.transport.write(json.dumps(answer).encode('utf-8'))
+                                Add_widget2 = True
+                                f.close()
                                 self.transport.loseConnection()
             else:
                 try:
@@ -1799,11 +2151,13 @@ class GetFile(Protocol):
                     get_data_in_dict6 = json.loads(get_data6)
                     if get_data_in_dict6['set'] == 'get another file':
                         del get_data_in_dict6['set']
+                        information_file['filename'] = get_data_in_dict6['filename']
                         with open('D:/Files/%s' % (get_data_in_dict6['filename']), 'w') as f:
                             f.write(get_data_in_dict6['filedata'])
                             answer = {}
                             answer['set'] = 'Nice'
                             self.transport.write(json.dumps(answer).encode('utf-8'))
+                            Add_widget2 = True
                             self.transport.loseConnection()
 
         else:
@@ -1849,19 +2203,17 @@ class GetFile(Protocol):
     def GetFile(self, file_data):
         global sum_data
         global Add_widget
+        global Add_widget2
         if sum_data == information_file['size']:
             self.f.write(file_data)
             sum_data = 0
-            # Add_widget = True
+            self.f.close()
+            Add_widget2 = True
             self.transport.loseConnection()
         else:
             self.f.write(file_data)
     def connectionLost(self, reason):
-        try:
-            self.f.close()
             print('disconected file')
-        except builtins.AttributeError:
-            pass
 class SentFile(Protocol):
     def connectionMade(self):
         print('Sent file connected')
@@ -1910,7 +2262,7 @@ class SentFile(Protocol):
                     data_txt['set'] = 'transport txt file'
                     js_data = json.dumps(data_txt)
                     bytes_data_txt_file = js_data.encode('utf-8')
-                    compress_data = gzip.compress(bytes_data_txt_file)
+                    compress_data = lzma.compress(bytes_data_txt_file)
                     self.transport.write(compress_data)
                     Add_widget = True
             elif get_data_in_dict7['set'] == 'Hello from server' and transport_file == True:
@@ -1920,11 +2272,15 @@ class SentFile(Protocol):
                 recipient = ''.join(bring_user[0])
                 relative_file_path = ''.join(file)
                 extension = ''.join(file_extension)
+                current_date = datetime.now().date()
+                current_time = datetime.now().time()
                 if extension == '.png':
                     data_file['set'] = 'bring file2'
                     data_file['sender'] = login
                     data_file['receipient'] = recipient
                     data_file['file_extension'] = extension
+                    data_file['date'] = str(current_date)
+                    data_file['time'] = str(current_time)
                     data_file['filename'] = relative_file_path
                     data_file['fullfilename'] = fullfilename_q
                     data_file['filesize'] = int(file_size[0])
@@ -1936,6 +2292,8 @@ class SentFile(Protocol):
                     data_file['sender'] = login
                     data_file['receipient'] = recipient
                     data_file['file_extension'] = extension
+                    data_file['date'] = str(current_date)
+                    data_file['time'] = str(current_time)
                     data_file['filename'] = relative_file_path
                     data_file['fullfilename'] = fullfilename_q
                     data_file['filesize'] = int(file_size[0])
@@ -1948,6 +2306,8 @@ class SentFile(Protocol):
                     data_file['receipient'] = recipient
                     data_file['file_extension'] = extension
                     data_file['filename'] = relative_file_path
+                    data_file['date'] = str(current_date)
+                    data_file['time'] = str(current_time)
                     data_file['fullfilename'] = fullfilename_q
                     data_file['filesize'] = int(file_size[0])
                     data_file_string2 = json.dumps(data_file)
@@ -1958,9 +2318,11 @@ class SentFile(Protocol):
                     data_file['sender'] = login
                     data_file['receipient'] = recipient
                     data_file['file_extension'] = extension
+                    data_file['date'] = str(current_date)
+                    data_file['time'] = str(current_time)
                     data_file['filename'] = relative_file_path
                     data_file['fullfilename'] = fullfilename_q
-                    data_file['filesize'] = file_size
+                    data_file['filesize'] = int(file_size[0])
                     data_file_string2 = json.dumps(data_file)
                     data_file_format_utf2 = data_file_string2.encode('utf-8')
                     self.transport.write(data_file_format_utf2)
@@ -1970,7 +2332,9 @@ class SentFile(Protocol):
                     data_file['receipient'] = recipient
                     data_file['filename'] = relative_file_path
                     data_file['fullfilename'] = fullfilename_q
-                    data_file['filesize'] = file_size
+                    data_file['date'] = str(current_date)
+                    data_file['time'] = str(current_time)
+                    data_file['filesize'] = int(file_size[0])
                     data_file['file_extension'] = extension
                     data_file_string2 = json.dumps(data_file)
                     data_file_format_utf2 = data_file_string2.encode('utf-8')
@@ -1988,6 +2352,7 @@ class Synchronization_Of_Messages(Protocol):
         global name
         global get_mess
         global write
+        global messages
         try:
             decompres_data = gzip.decompress(data)
             get_data5 = decompres_data.decode('utf-8')
@@ -2009,19 +2374,8 @@ class Synchronization_Of_Messages(Protocol):
             elif get_data_in_dict5['set'] == 'receive':
                     print(get_data_in_dict5)
                     del get_data_in_dict5['set']
-                    count = 0
-                    lenght = int(len(get_data_in_dict5))
-                    for key, value in get_data_in_dict5.items():
-                        count += 1
-                        print(get_data_in_dict5)
-                        message = ''.join(value)
-                        add_mess = True
-                        if lenght == count:
-                            get_mess = False
-                            self.transport.loseConnection()
-                            break
-                        elif get_mess == True:
-                            list_mess.append(message)
+                    messages = get_data_in_dict5
+                    self.transport.loseConnection()
         else:
             login = ''.join(name[0])
             sender2 = ''.join(sender[0])
@@ -2037,19 +2391,9 @@ class Synchronization_Of_Messages(Protocol):
             elif get_data_in_dict5['set'] == 'receive':
                     print(get_data_in_dict5)
                     del get_data_in_dict5['set']
-                    count = 0
-                    lenght = int(len(get_data_in_dict5))
-                    for key, value in get_data_in_dict5.items():
-                        count += 1
-                        message = ''.join(value)
-                        if lenght == count:
-                            get_mess = False
-                            add_mess = True
-                            list_mess.append(message)
-                            self.transport.loseConnection()
-                            break
-                        elif get_mess == True:
-                            list_mess.append(message)
+                    messages = get_data_in_dict5
+                    add_mess = True
+                    self.transport.loseConnection()
     def connectionLost(self, reason):
             print('disconected')
 class ClientChatFactory(ClientFactory):
